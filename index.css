@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Blinker&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@300&family=Prompt:wght@300&display=swap');
+
+*{
+    /* font-family: 'Blinker', sans-serif; */
+    font-family: 'Martian Mono', monospace;
+    /* font-family: 'Prompt', sans-serif; */
+    font-variant: small-caps;
+    color: aquamarine;
+}
+intersection(this.centre, ball.centre, [this.radius, ball.radius])
+body{
+    margin: 0;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    background-color: cyan;
+}
+
+
+nav{
+    position: fixed;
+    height: 100%;
+    width: 10em;
+    background-color: rgba(0,0,0,.7);
+}
+
+nav>*{
+    text-align: center;
+    padding-top: var(--padding);
+    padding-bottom: var(--padding);
+    padding-top: 2em;
+}
+
+#heading{
+    font-size: larger;
+}
+
+.choose{
+    --padding: 10px;
+    margin: 3em 1em;
+    border-left: 2px cyan solid;
+    border-right: 2px cyan solid;
+}
+
+.choose>*{
+    --margin: 5px;
+    display: block;
+    margin: auto;
+    margin-top: var(--margin);
+    margin-bottom: var(--margin);
+}
+
+.choose-text{
+    font-size: larger;
+    text-decoration: overline;
+}
+
+input[type=range]#length-picker{
+    --margin: 5.5em;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transform: rotate(90deg);
+    background-color: cyan;
+    color: cyan;
+    width: 10em;
+    height: 4px;
+    text-align: center;
+    cursor: pointer;
+    margin-top: var(--margin);
+    margin-bottom: var(--margin);
+    border-radius: 2px;
+
+}
+
+.color-picker-container{
+    cursor: pointer;
+}
+
+
+input[type="color"].color-picker{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 0 black solid;
+    background-color: rgba(0,0,0,0);
+    padding: 0;
+    width: 3em;
+    cursor: pointer;
+}
+
+.color-picker-png{
+    width: 1.5em;
+    height: 1.5em;
+}
+
+
+.randomize {
+  background: hsl(var(--hue), 98%, 80%);
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  color: black;
+  font-size: 1em;
+  letter-spacing: 0.05em;
+  overflow: hidden;
+  padding: .4em .5em;
+  min-height: 2em;
+  position: relative;
+  text-transform: lowercase;
+  font-variant: small-caps;
+}
+
+.btn--green {
+  --hue: 0;
+}
+
+.randomize:active, .randomize:focus {
+  outline: 3px solid hsl(calc(var(--hue) + 90), 98%, 80%);
+}
+.randomize + .randomize {
+  margin-top: 2.5em;
+}
+.btn__txt {
+  position: relative;
+  z-index: 2;
+}
+.btn__bg {
+  background: hsl(var(--hueBg), 98%, 80%);
+  border-radius: 50%;
+  display: block;
+  height: 0;
+  left: 50%;
+  margin: -50% 0 0 -50%;
+  padding-top: 100%;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: scale(0);
+  transform-origin: 50% 50%;
+  transition: transform 0.175s cubic-bezier(0.5, 1, 0.89, 1);
+  z-index: 1;
+}
+.btn__bg:nth-of-type(1) {
+  --hueBg: calc(var(--hue) - 90);
+  transition-delay: 0.1725s;
+}
+.btn__bg:nth-of-type(2) {
+  --hueBg: calc(var(--hue) - 180);
+  transition-delay: 0.115s;
+}
+.btn__bg:nth-of-type(3) {
+  --hueBg: calc(var(--hue) - 270);
+  transition-delay: 0.0575s;
+}
+.btn__bg:nth-of-type(4) {
+  --hueBg: calc(var(--hue) - 360);
+  transition-delay: 0s;
+}
+.randomize:hover .btn__bg, .randomize:focus .btn__bg, .randomize:active .btn__bg {
+  transform: scale(1.5);
+  transition: transform 0.35s cubic-bezier(0.11, 0, 0.5, 0);
+}
+.randomize:hover .btn__bg:nth-of-type(1), .randomize:focus .btn__bg:nth-of-type(1), .randomize:active .btn__bg:nth-of-type(1) {
+  transition-delay: 0.115s;
+}
+.randomize:hover .btn__bg:nth-of-type(2), .randomize:focus .btn__bg:nth-of-type(2), .randomize:active .btn__bg:nth-of-type(2) {
+  transition-delay: 0.23s;
+}
+.randomize:hover .btn__bg:nth-of-type(3), .randomize:focus .btn__bg:nth-of-type(3), .randomize:active .btn__bg:nth-of-type(3) {
+  transition-delay: 0.345s;
+}
+.randomize:hover .btn__bg:nth-of-type(4), .randomize:focus .btn__bg:nth-of-type(4), .randomize:active .btn__bg:nth-of-type(4) {
+  transition-delay: 0.46s;
+}
