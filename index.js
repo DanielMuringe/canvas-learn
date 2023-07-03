@@ -1,19 +1,21 @@
-const bodyTag = document.getElementsByTagName('body')[0]
-const headTag = document.getElementsByTagName('head')[0]
+// Get head and body element
+const BODY = document.body
+const HEAD = document.head
 
 
-// xUACompatible meta
-const xUACompatible = document.createElement('meta');
-xUACompatible.httpEquiv = 'X-UA-Compatible';
-xUACompatible.content = 'IE=edge';
-headTag.appendChild(xUACompatible);
+// Get initial window dimensions
+const initialWindowDimensions = [window.innerWidth, window.innerHeight];
 
 
-// Viewport meta
-const viewport = document.createElement('meta');
-viewport.name = 'viewport';
-viewport.content = 'width=device-width, initial-scale=1';
-headTag.appendChild(viewport);
+// Set theme color
+function themeColor(){
+    const rootSelector = document.querySelector(':root');
+    this.color = getComputedStyle(rootSelector).getPropertyValue('--theme-color');
+    this.opposite = getComputedStyle(rootSelector).getPropertyValue('--theme-color-opposite');
+    this.set = color => rootSelector.style.setProperty('--theme-color', color);
+}
+
+const THEME_COLOR = new themeColor();
 
 
 // Square function
@@ -37,19 +39,19 @@ let randInt = (...bounds) => {
         throw Error('A maximum of 3 numbers can be passed as arguments, (stop only) or (start and stop)');
 
 
-    let val = 0;
+    let value = 0;
     if (bounds.length == 1)
-        val = Math.floor(Math.random() * bounds[0]);
+        value = Math.floor(Math.random() * bounds[0]);
     else if (bounds.length == 2)
-        val = (Math.floor(Math.random() * (bounds[1] - bounds[0])) + bounds[0]);
+        value = (Math.floor(Math.random() * (bounds[1] - bounds[0])) + bounds[0]);
     else if (bounds.length == 3) {
-        while (bounds[2](val)) {
-            val = (Math.floor(Math.random() * (bounds[1] - bounds[0])) + bounds[0]);
+        value = (Math.floor(Math.random() * (bounds[1] - bounds[0])) + bounds[0]);
+        while (bounds[2](value)) {
+            value = (Math.floor(Math.random() * (bounds[1] - bounds[0])) + bounds[0]);
         }
     }
 
-    return val;
-
+    return value;
 };
 
 
@@ -61,33 +63,39 @@ let randList = (len, ...bounds) => {
 }
 
 
-// Random x and y coordinates
+// Generate andom x and y coordinates
 let xRand = (n) => randInt(n, window.innerWidth - n);
 let yRand = (n) => randInt(n, window.innerHeight - n);
 let randCoord = (n) => [xRand(n), yRand(n)];
 
 
-class Canvas {
+// Generate random color
+let randColor = (exclude=(val=>val<0||val>255)) => {
+    let col = () => Math.abs(randInt(0, 255, exclude));
+    let [c1, c2, c3] = [col(), col(), col()]
+    return {
+        col:`rgb(${c1},${c2},${c3})`,
+        val: [c1, c2, c3]
+    };
+}
 
+
+class Canvas {
 
     constructor() {
         // Create tag and assign attributes
         this.tag = document.createElement('canvas');
         this.tagSetter();
-        bodyTag.appendChild(this.tag);
+        BODY.appendChild(this.tag);
 
         // Draw using context
         this.ctx = this.tag.getContext('2d');
-        this.defaultColor = '#000000';
+        this.defaultColor = THEME_COLOR.color;
 
-        // Add object to locate position of mouse
-        this.mouse = { x: NaN, y: NaN }
-        window.addEventListener('mousemove',
-            (event) => {
-                this.mouse.x = event.x;
-                this.mouse.y = event.y;
-            }
-        )
+        // Access variables
+        this.lineColor = THEME_COLOR.opposite;
+        this.partyTime = false;
+        this.lineLength = 10;
 
         // Render stuff on canvas
         this.render();
@@ -95,10 +103,22 @@ class Canvas {
 
     render(obj = this) {
 
+        const randomizeLineColorTag   = document.getElementById('randomize-line-color');
+        const pickLineColorTag   = document.getElementById('line-color-picker');
+        pickLineColorTag.defaultValue = '#00ffff';
+        const partyTimeTag   = document.getElementById('party-time');
+        const randomizeCanvasColorTag   = document.getElementById('randomize-canvas-color');
+        const pickCanvasColorTag   = document.getElementById('bg-color-picker');
+        pickCanvasColorTag.defaultValue = '#00ffff';
+
+        randomizeLineColorTag.addEventListener('click', () => this.lineColor = randColor().col);
+        randomizeCanvasColorTag.addEventListener('click', () => THEME_COLOR.set(randColor().col));
+        partyTimeTag.addEventListener('click', () => this.partyTime = !this.partyTime);
+
         function bouncingPoints(radius, coordinates = randCoord(), velocity, color = obj.defaultColor) {
             this.radius = radius;
             this.coordinates = coordinates;
-            this.color = color;
+            this.color = obj.lineColor;
 
             let [x, y] = this.coordinates;
             let [dx, dy] = this.velocity = velocity;
@@ -117,26 +137,25 @@ class Canvas {
                 this.velocity[0] = dx; this.velocity[1] = dy;
             }
 
-            this.bounceRadius = (currentIndex, points = []) => {
-
+            this.bounceRadius = (currentIndex, points=[]) => {
                 for (const point of points.slice(0, currentIndex)) {
-                    if (distance(this.coordinates, point.coordinates) <= (this.radius + point.radius + 10))
-                        obj.line(this.coordinates, point.coordinates, 2, this.color);
+                    let col = obj.lineColor;
+                    if (obj.partyTime) col = randColor().col;
+                    if (distance(this.coordinates, point.coordinates) <= (this.radius + point.radius + obj.lineLength))
+                        obj.line(this.coordinates, point.coordinates, 2, col);
                 }
             }
         }
 
         let points = [];
-        let pointCount = 200;
-        let col = () => randInt(0, 255, (val => val <= 10));
+        let pointCount = 100;
         for (let i = 0; i < pointCount; i++) {
             points.push(
                 new bouncingPoints(
-                    60,
+                    80,
                     randCoord(50),
-                    randList(2, -3, 3, (val => val == 0)),
-                    'black'
-                    // `rgb(${col()},${col()},${col()})`
+                    randList(2, -4, 4, (val => val == 0)),
+                    this.lineColor
                 )
             );
         }
@@ -156,12 +175,8 @@ class Canvas {
 
     tagSetter(tag = this.tag) {
 
-        // Add styling to canvas
-        this.styling = {
-            'background-color': 'cyan'
-        }
-        for (const key in this.styling)
-            tag.style.setProperty(key, this.styling[key]);
+        // Set tag id
+        tag.id = 'canvas';
 
         // Set canvas dimensions
         tag.width = window.innerWidth;
@@ -169,8 +184,10 @@ class Canvas {
         window.addEventListener(
             'resize',
             (event) => {
-                tag.width = event.currentTarget.innerWidth;
-                tag.height = event.currentTarget.innerHeight;
+                let width = event.currentTarget.innerWidth;
+                let height = event.currentTarget.innerHeight;
+                tag.width = width; BODY.width = width;
+                tag.height = height; BODY.height = height;
             }
         )
     }

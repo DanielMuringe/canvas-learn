@@ -4,85 +4,231 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]>      <html class="no-js"> <![endif]-->
 <html>
-    <head>
-        <title>CANVAS LEARN</title>
-        <meta name="description" content="This is my first canvas">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="index.css">
-    </head>
-    <body>
-        <!--[if lt IE 7]>
+
+<head>
+  <title>THE WEB</title>
+  <meta name="description" content="This is my first canvas">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+
+<body style="visibility: hidden;">
+  <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-        <script src="index.js" async defer></script>
-        <nav>
-            <div id="heading">CANVAS LEARN</div>
-            <div id="choose-color" class="choose">
-                <span class="choose-text">Line Color</span> 
-                <span class="color-picker-container">
-                    <input type="color" id="color-picker" class="input-picker color-picker" value="#00ffff">
-                    <svg style="width:1.5em;height:1.5em" class="color-picker-png" fill="#00ffff" height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 464.736 464.736" xml:space="preserve">
-                        <g>
-                            <path d="M446.598,18.143c-24.183-24.184-63.393-24.191-87.592-0.008l-16.717,16.717c-8.98-8.979-23.525-8.979-32.504,0
+  <nav>
+    <div id="heading">
+      <svg rel="icon" class="head-icon icon" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 100 125" version="1.1" x="0px" y="0px">
+        <g transform="translate(0,-952.36216)">
+          <g transform="matrix(0.44673404,0,0,0.44659181,50,1002.3622)">
+            <path d="M 0,0 68.8191,50" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 68.8191,-50" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -49.798,36.1803" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -49.798,-36.1803" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 19.0211,58.541" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 19.0211,-58.541" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 61.5537,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -85.0651,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -26.2866,80.9017" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -26.2866,-80.9017" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 26.2866,80.9017" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 26.2866,-80.9017" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -68.8191,50" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -68.8191,-50" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 49.798,36.1803" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 49.798,-36.1803" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 85.0651,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -19.0211,58.541" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -19.0211,-58.541" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 0,0 -61.5537,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 68.8191,50" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 -68.8191,50" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 49.798,36.1803" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 -19.0211,58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 -30.7768,94.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m 26.2866,80.9017 4.4902,13.8197" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,80.9017 80.5748,58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m 26.2866,80.9017 -52.5732,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 68.8191,-50" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 -68.8191,-50" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 49.798,-36.1803" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 -19.0211,-58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 -30.7768,-94.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m 26.2866,-80.9017 4.4902,-13.8197" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 26.2866,-80.9017 80.5748,-58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m 26.2866,-80.9017 -52.5732,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m 68.8191,50 0,-100" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 68.8191,50 99.5959,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m 68.8191,50 -49.798,8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,50 85.0651,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 68.8191,50 30.7768,94.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,50 61.5537,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m 68.8191,50 11.7557,8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,50 -26.2866,80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,-50 99.5959,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m 68.8191,-50 -49.798,-8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,-50 85.0651,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="M 68.8191,-50 30.7768,-94.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,-50 61.5537,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m 68.8191,-50 11.7557,-8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 68.8191,-50 -26.2866,-80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 99.5959,0 85.0651,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -68.8191,50 0,-100" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -68.8191,50 49.798,8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -68.8191,50 -61.5537,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -68.8191,50 38.0423,44.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -68.8191,50 -85.0651,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -68.8191,50 42.5325,30.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -68.8191,50 -99.5959,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -68.8191,50 -11.7557,8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -68.8191,-50 49.798,-8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -68.8191,-50 7.2654,50" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -68.8191,-50 38.0423,-44.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -68.8191,-50 -85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -68.8191,-50 42.5325,-30.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -68.8191,-50 -99.5959,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -68.8191,-50 -11.7557,-8.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -49.798,36.1803 -85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -49.798,36.1803 23.5114,44.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -49.798,-36.1803 -85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -49.798,-36.1803 23.5114,-44.7214" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 49.798,36.1803 85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 49.798,-36.1803 85.0651,0" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 19.0211,58.541 -26.2866,80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 19.0211,-58.541 -26.2866,-80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 85.0651,0 80.5748,58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 85.0651,0 80.5748,-58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -30.7768,94.7214 4.4902,-13.8197" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -30.7768,-94.7214 4.4902,13.8197" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M 30.7768,94.7214 -26.2866,80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m 30.7768,-94.7214 -57.0634,13.8197" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -85.0651,0 58.7785,80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -85.0651,0 58.7785,-80.9017" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -85.0651,0 -99.5959,0" style="" stroke-width="2.23882484" stroke-linecap="round" />
+            <path d="m -85.0651,0 4.4903,58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="m -85.0651,0 4.4903,-58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -26.2866,80.9017 -80.5748,58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+            <path d="M -26.2866,-80.9017 -80.5748,-58.541" style="" stroke-width="2.23882484"
+              stroke-linecap="round" />
+          </g>
+        </g>
+      </svg>
+      <span id="heading-text">
+        THE WEB
+      </span>
+    </div>
+    <div id="choose-color" class="choose">
+      <hr class="choose-line">
+      <span class="choose-text">Line Color</span>
+      <span class="color-picker-container">
+        <input type="color" id="line-color-picker" class="input-picker color-picker">
+        <svg style="width:1.5em;height:1.5em" class="color-picker-png" fill="#00ffff" height="800px" width="800px"
+          version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 464.736 464.736" xml:space="preserve">
+          <g>
+            <path d="M446.598,18.143c-24.183-24.184-63.393-24.191-87.592-0.008l-16.717,16.717c-8.98-8.979-23.525-8.979-32.504,0
                                 c-8.981,8.972-8.981,23.533,0,32.505l5.416,5.419L134.613,253.377h-0.016l-62.685,62.691c-4.982,4.982-7.919,11.646-8.235,18.684
                                 l-0.15,3.344c0,0.016,0,0.03,0,0.046l-2.529,56.704c-0.104,2.633,0.883,5.185,2.739,7.048c1.751,1.759,4.145,2.738,6.63,2.738
                                 c0.135,0,0.269,0,0.42-0.008l30.064-1.331h0.016l18.318-0.815l8.318-0.366c9.203-0.412,17.944-4.259,24.469-10.776l240.898-240.891
                                 l4.506,4.505c4.49,4.488,10.372,6.733,16.252,6.733c5.881,0,11.764-2.245,16.253-6.733c8.98-8.973,8.98-23.534,0-32.505
                                 l16.716-16.718C470.782,81.544,470.782,42.334,446.598,18.143z M272.639,227.33l-84.6,15.96l137.998-138.004l34.332,34.316
-                                L272.639,227.33z"/>
-                            <path d="M64.5,423.872c-35.617,0-64.5,9.145-64.5,20.435c0,11.284,28.883,20.428,64.5,20.428s64.486-9.143,64.486-20.428
-                                C128.986,433.016,100.117,423.872,64.5,423.872z"/>
-                        </g>
-                    </svg>
-                </span>
-                <button type="button" class="randomize btn--green">
-                    <span class="btn__txt">Randomize</span>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div id="choose-bg-color" class="choose">
-                <span class="choose-text">Canvas Color</span> 
-                <span class="color-picker-container">
-                    <input type="color" id="color-picker" class="input-picker color-picker" value="#00ffff">
-                    <svg style="width:1.5em;height:1.5em" class="color-picker-png" fill="#00ffff" height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 464.736 464.736" xml:space="preserve">
-                        <g>
-                            <path d="M446.598,18.143c-24.183-24.184-63.393-24.191-87.592-0.008l-16.717,16.717c-8.98-8.979-23.525-8.979-32.504,0
+                                L272.639,227.33z" />
+            <path d="M64.5,423.872c-35.617,0-64.5,9.145-64.5,20.435c0,11.284,28.883,20.428,64.5,20.428s64.486-9.143,64.486-20.428
+                                C128.986,433.016,100.117,423.872,64.5,423.872z" />
+          </g>
+        </svg>
+      </span>
+      <button id="randomize-line-color" type="button" class="btn randomize">Randomize</button>
+      <button id="party-time" type="button" class="btn party">Party Time</button>
+    </div>
+    <div id="choose-bg-color" class="choose">
+      <hr class="choose-line">
+      <span class="choose-text">Canvas Color</span>
+      <span class="color-picker-container">
+        <input type="color" id="bg-color-picker" class="input-picker color-picker">
+        <svg style="width:1.5em;height:1.5em" class="color-picker-png" fill="#00ffff" height="800px" width="800px"
+          version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 464.736 464.736" xml:space="preserve">
+          <g>
+            <path d="M446.598,18.143c-24.183-24.184-63.393-24.191-87.592-0.008l-16.717,16.717c-8.98-8.979-23.525-8.979-32.504,0
                                 c-8.981,8.972-8.981,23.533,0,32.505l5.416,5.419L134.613,253.377h-0.016l-62.685,62.691c-4.982,4.982-7.919,11.646-8.235,18.684
                                 l-0.15,3.344c0,0.016,0,0.03,0,0.046l-2.529,56.704c-0.104,2.633,0.883,5.185,2.739,7.048c1.751,1.759,4.145,2.738,6.63,2.738
                                 c0.135,0,0.269,0,0.42-0.008l30.064-1.331h0.016l18.318-0.815l8.318-0.366c9.203-0.412,17.944-4.259,24.469-10.776l240.898-240.891
                                 l4.506,4.505c4.49,4.488,10.372,6.733,16.252,6.733c5.881,0,11.764-2.245,16.253-6.733c8.98-8.973,8.98-23.534,0-32.505
                                 l16.716-16.718C470.782,81.544,470.782,42.334,446.598,18.143z M272.639,227.33l-84.6,15.96l137.998-138.004l34.332,34.316
-                                L272.639,227.33z"/>
-                            <path d="M64.5,423.872c-35.617,0-64.5,9.145-64.5,20.435c0,11.284,28.883,20.428,64.5,20.428s64.486-9.143,64.486-20.428
-                                C128.986,433.016,100.117,423.872,64.5,423.872z"/>
-                        </g>
-                    </svg>
-                </span>
-                <button type="button" class="randomize btn--green">
-                    <span class="btn__txt">Randomize</span>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div id="choose-color" class="choose">
-                <span class="choose-text">Line Length</span> 
-                <input type="range" id="length-picker" class="input-picker length-picker" min="10" max="100" step="2">
-                <button type="button" class="btn--green randomize">
-                    <span class="btn__txt">Randomize</span>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                    <i class="btn__bg" aria-hidden="true"></i>
-                </button>
-            </div>
-            
-            
-        </nav>
+                                L272.639,227.33z" />
+            <path d="M64.5,423.872c-35.617,0-64.5,9.145-64.5,20.435c0,11.284,28.883,20.428,64.5,20.428s64.486-9.143,64.486-20.428
+                                C128.986,433.016,100.117,423.872,64.5,423.872z" />
+          </g>
+        </svg>
+      </span>
+      <button id="randomize-canvas-color" type="button" class="btn randomize">Randomize</button>
+    </div>
+  </nav>
 
-    </body>
+  <link rel="stylesheet" href="index.css">
+  <script src="index.js" async defer></script>
+
+</body>
+
 </html>
