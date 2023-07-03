@@ -222,7 +222,7 @@ class Canvas {
                 point.bounceRadius(i, points);
             }
         }
-        // animate()
+        animate()
 
     }
 
