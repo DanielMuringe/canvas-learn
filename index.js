@@ -10,9 +10,28 @@ const initialWindowDimensions = [window.innerWidth, window.innerHeight];
 // Set theme color
 function themeColor(){
     const rootSelector = document.querySelector(':root');
+    this.val = [
+        getComputedStyle(rootSelector).getPropertyValue('--c1'),
+        getComputedStyle(rootSelector).getPropertyValue('--c2'),
+        getComputedStyle(rootSelector).getPropertyValue('--c3')
+    ];
+    this.oppositeVal = [
+        getComputedStyle(rootSelector).getPropertyValue('--d1'),
+        getComputedStyle(rootSelector).getPropertyValue('--d2'),
+        getComputedStyle(rootSelector).getPropertyValue('--d3')
+    ];
+    this.set = (...color) => {
+        rootSelector.style.setProperty('--c1', color[0]);
+        rootSelector.style.setProperty('--c2', color[1]);
+        rootSelector.style.setProperty('--c3', color[2]);
+    };
+    this.setOpposite = (...color) => {
+        rootSelector.style.setProperty('--d1', color[0]);
+        rootSelector.style.setProperty('--d2', color[1]);
+        rootSelector.style.setProperty('--d3', color[2]);
+    };
     this.color = getComputedStyle(rootSelector).getPropertyValue('--theme-color');
     this.opposite = getComputedStyle(rootSelector).getPropertyValue('--theme-color-opposite');
-    this.set = color => rootSelector.style.setProperty('--theme-color', color);
 }
 
 const THEME_COLOR = new themeColor();
@@ -70,7 +89,7 @@ let randCoord = (n) => [xRand(n), yRand(n)];
 
 
 // Generate random color
-let randColor = (exclude=(val=>val<0||val>255)) => {
+let randColor = (exclude=(val=>val<10||val>255)) => {
     let col = () => Math.abs(randInt(0, 255, exclude));
     let [c1, c2, c3] = [col(), col(), col()]
     return {
@@ -78,6 +97,15 @@ let randColor = (exclude=(val=>val<0||val>255)) => {
         val: [c1, c2, c3]
     };
 }
+
+
+// Conver tggb to hex
+let componentToHex = (c) => {
+    const hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
+  
+let rgbToHex = (r, g, b) => "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 
 
 class Canvas {
@@ -94,7 +122,6 @@ class Canvas {
 
         // Access variables
         this.lineColor = THEME_COLOR.opposite;
-        this.partyTime = false;
         this.lineLength = 10;
 
         // Render stuff on canvas
@@ -103,22 +130,42 @@ class Canvas {
 
     render(obj = this) {
 
+        const tabColorTag = document.getElementById('tab-color');
+        tabColorTag.content = rgbToHex(...THEME_COLOR.val);
         const randomizeLineColorTag   = document.getElementById('randomize-line-color');
         const pickLineColorTag   = document.getElementById('line-color-picker');
-        pickLineColorTag.defaultValue = '#00ffff';
-        const partyTimeTag   = document.getElementById('party-time');
+        pickLineColorTag.defaultValue = rgbToHex(...THEME_COLOR.val);
         const randomizeCanvasColorTag   = document.getElementById('randomize-canvas-color');
         const pickCanvasColorTag   = document.getElementById('bg-color-picker');
-        pickCanvasColorTag.defaultValue = '#00ffff';
+        const pickCanvasColorPngTag = document.getElementById('bg-color-picker-png');
+        pickCanvasColorPngTag.fill = rgbToHex(...THEME_COLOR.val);
+        pickCanvasColorTag.defaultValue = rgbToHex(...THEME_COLOR.val);
+        
+        randomizeLineColorTag.addEventListener('click', 
+            () => {
+                    let col = randColor();
+                    this.lineColor = col.col;
+                    THEME_COLOR.setOpposite(...col.val);
+                    pickLineColorTag.defaultValue = rgbToHex(...col.val);
+                    this.partyTime = false;
+            }
+        );
+        randomizeCanvasColorTag.addEventListener('click', 
+            () => {
+                    let col = randColor();
+                    THEME_COLOR.set(...col.val);
+                    pickCanvasColorTag.defaultValue = rgbToHex(...col.val);
+                    pickCanvasColorPngTag.fill = rgbToHex(...THEME_COLOR.val);
+                    tabColorTag.content = rgbToHex(...THEME_COLOR.val);
+                    this.partyTime = false;
+            }
+        );
 
-        randomizeLineColorTag.addEventListener('click', () => this.lineColor = randColor().col);
-        randomizeCanvasColorTag.addEventListener('click', () => THEME_COLOR.set(randColor().col));
-        partyTimeTag.addEventListener('click', () => this.partyTime = !this.partyTime);
 
-        function bouncingPoints(radius, coordinates = randCoord(), velocity, color = obj.defaultColor) {
+        function bouncingPoints(radius, coordinates = randCoord(), velocity) {
+            this.color = obj.lineColor;
             this.radius = radius;
             this.coordinates = coordinates;
-            this.color = obj.lineColor;
 
             let [x, y] = this.coordinates;
             let [dx, dy] = this.velocity = velocity;
@@ -138,11 +185,10 @@ class Canvas {
             }
 
             this.bounceRadius = (currentIndex, points=[]) => {
+                this.color = obj.lineColor;
                 for (const point of points.slice(0, currentIndex)) {
-                    let col = obj.lineColor;
-                    if (obj.partyTime) col = randColor().col;
                     if (distance(this.coordinates, point.coordinates) <= (this.radius + point.radius + obj.lineLength))
-                        obj.line(this.coordinates, point.coordinates, 2, col);
+                        obj.line(this.coordinates, point.coordinates, 2, this.color);
                 }
             }
         }
@@ -154,11 +200,19 @@ class Canvas {
                 new bouncingPoints(
                     80,
                     randCoord(50),
-                    randList(2, -4, 4, (val => val == 0)),
-                    this.lineColor
+                    randList(2, -4, 4, (val => val == 0))
                 )
             );
         }
+        window.addEventListener(
+            'resize',
+            (event) => {
+                let width = event.currentTarget.innerWidth;
+                let height = event.currentTarget.innerHeight;
+                obj.tag.width = width; BODY.width = width;
+                obj.tag.height = height; BODY.height = height;
+            }
+        );
         function animate() {
             requestAnimationFrame(animate);
             obj.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -168,7 +222,7 @@ class Canvas {
                 point.bounceRadius(i, points);
             }
         }
-        animate()
+        // animate()
 
     }
 
@@ -176,20 +230,11 @@ class Canvas {
     tagSetter(tag = this.tag) {
 
         // Set tag id
-        tag.id = 'canvas';
+        tag.id = 'main-canvas';
 
         // Set canvas dimensions
         tag.width = window.innerWidth;
         tag.height = window.innerHeight;
-        window.addEventListener(
-            'resize',
-            (event) => {
-                let width = event.currentTarget.innerWidth;
-                let height = event.currentTarget.innerHeight;
-                tag.width = width; BODY.width = width;
-                tag.height = height; BODY.height = height;
-            }
-        )
     }
 
     line(begin = [0, 0], end = [1, 1], thickness=1, color = this.defaultColor, func = (context) => null) {
@@ -221,6 +266,8 @@ class Canvas {
         this.ctx.stroke();
     }
 }
+
+BODY.style.visibility = 'visible';
 
 CANVAS = new Canvas();
 

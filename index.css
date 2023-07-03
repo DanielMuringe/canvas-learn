@@ -9,7 +9,7 @@
   --d3: calc(255 - var(--c3));
   --theme-color: rgb(var(--c1),var(--c2),var(--c3));
   --theme-color-opposite: rgb(var(--d1), var(--d2), var(--d3));
-  --shadow-color: var(--theme-color);
+  --shadow-color: rgb(var(--c1), var(--c2), var(--c3), .7);
 }
 
 * {
@@ -29,7 +29,7 @@ body {
   background-color: var(--theme-color);
 }
 
-#canvas{
+#main-canvas{
   background-color: var(--theme-color);
 }
 
@@ -51,19 +51,42 @@ nav>* {
   color: var(--theme-color);
 }
 
-svg{
-    fill: var(--theme-color);
-    stroke: var(--theme-color);
+:root{
+  --head-icon-rotate-angle: 36deg;
+
 }
 
-.head-icon{
-    --head-icon-side: 30%;
-    width: var(--head-icon-side);
-    height: var(--head-icon-side);
-    margin: auto;
-    fill: var(--theme-color);
-    display: block;
+@keyframes head-icon-animation {
+  from{transform: rotate(calc(var(--head-icon-rotate-angle) * 0));}
+  to{transform: rotate(calc(var(--head-icon-rotate-angle) * 10));}
 }
+
+
+svg.head-icon{
+  --head-icon-side: 10vw;
+  width: var(--head-icon-side);
+  height: var(--head-icon-side);
+  margin: auto;
+  display: block;
+  animation-name: head-icon-animation;
+  animation-duration: 5s;
+  animation-iteration-count: infinite;
+  animation-delay: 0ms;
+  animation-timing-function:cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  padding: 0;
+}
+
+#head-icon-inner{
+  stroke: var(--theme-color-opposite);
+  fill: var(--theme-color-opposite);
+}
+
+
+#head-icon-outer{
+  stroke: var(--theme-color);
+  fill: var(--theme-color);
+}
+
 
 .choose {
   margin: 10% 7%;
@@ -131,8 +154,8 @@ input[type="color"].color-picker {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border: 0 black solid;
-  background-color: rgba(0, 0, 0, 0);
+  border: 0 transparent solid;
+  background-color: transparent;
   padding: 0;
   margin: 0;
   width: 25%;
@@ -142,7 +165,7 @@ input[type="color"].color-picker {
 }
 
 input[type="color"].color-picker:hover {
-  box-shadow: 0 0 black;
+  box-shadow: 0 0 transparent;
   animation-name: color-picker-click;
   animation-duration: .5s;
 }
@@ -152,10 +175,15 @@ input[type="color"].color-picker:hover {
   height: 1.5%;
 }
 
+#line-picker-png{
+  fill: var(--theme-color-opposite);
+  stroke: var(--theme-color-opposite);
+}
+
 
 .btn {
-  background: rgba(0, 0, 0, 0);
-  box-shadow: 5px 5px var(--theme-color);
+  background: transparent;
+  box-shadow: 5px 5px var(--shadow-color);
   border-radius: 7px;
   cursor: pointer;
   font-size: 100%;
@@ -171,7 +199,7 @@ input[type="color"].color-picker:hover {
 
 @keyframes btn-click {
   0%{
-    background-color: rgba(0, 0, 0, 0);
+    background-color: transparent;
     box-shadow: 3px 3px var(--shadow-color);
   }
   12.5%{
@@ -191,15 +219,10 @@ input[type="color"].color-picker:hover {
 .btn:hover{
   animation-name: btn-click;
   animation-duration: .5s;
-  background-color: var(--theme-color);
-  box-shadow: 0px 0px var(--shadow-color);
+  background-color: var(--shadow-color);
+  box-shadow: 0px 0px transparent;
 }
 
 .btn:active{
-  background: rgba(0, 0, 0, 0);
-}
-
-
-*{
-  visibility: visible;
+  background: transparent;
 }
