@@ -36,10 +36,28 @@ body {
 
 nav {
   position: fixed;
-  height: 100vh;
+  height: 100%;
   max-width: 25%;
   background-color: rgba(var(--d1), var(--d2), var(--d3), .6);
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
+
+nav::-webkit-scrollbar{
+  width: 10px;
+}
+
+nav::-webkit-scrollbar-track{
+  background: var(--theme-color-opposite);
+}
+
+::-webkit-scrollbar-thumb {
+  width: 8px;
+  background: var(--theme-color);
+  border: 2px var(--theme-color-opposite) solid;
+  border-radius: 7px;
+}
+
 
 nav>* {
   text-align: center;
