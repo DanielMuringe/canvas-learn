@@ -165,12 +165,12 @@ class Canvas {
         }
 
         let balls = [];
-        let ballCount = (window.innerWidth+window.innerHeight)/40;
+        let ballCount = (window.innerWidth+window.innerHeight)/60;
 
         for (let i = 0; i < ballCount; i++) {
             balls.push(
                 new bouncingBalls(
-                    30,
+                    randInt((window.innerWidth+window.innerHeight)/70, (window.innerWidth+window.innerHeight)/50),
                     randCoord(50),
                     randList(2, -4, 4, (val => val == 0)),
                     randColor(),
