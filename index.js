@@ -95,6 +95,12 @@ class Canvas {
         this.ctx = this.tag.getContext('2d');
         this.defaultColor = '#000000';
 
+        // Add object to locate position of mouse
+        this.mouse = { position: [], inWindow: false}
+        window.addEventListener('mousemove', event => this.mouse.position = [event.x, event.y]);
+        window.addEventListener('mouseover',  event => this.mouse.inWindow = true);
+        window.addEventListener('mouseout',  event => this.mouse.inWindow = false);
+
         // Render stuff on canvas
         this.render();
     }
@@ -119,8 +125,14 @@ class Canvas {
             this.inProximity = (...coord) => distance(coord, this.centre) <= this.radius;
             
             this.draw = () => {
+                // Mouse interactivity
+                let mouseProximity = this.inProximity(...obj.mouse.position);
+                if (this.inProximity(...obj.mouse.position)&&obj.mouse.inWindow) this.radius = radius*2;
+                else this.radius = radius;
+
                 // Draw circle on canvas
                 obj.circle(this.radius, this.centre, this.color, thickness, fill);
+
             }
             
             this.bounceWall = () => {
@@ -158,7 +170,7 @@ class Canvas {
         for (let i = 0; i < ballCount; i++) {
             balls.push(
                 new bouncingBalls(
-                    randInt((window.innerWidth+window.innerHeight)/40, (window.innerWidth+window.innerHeight)/30),
+                    30,
                     randCoord(50),
                     randList(2, -4, 4, (val => val == 0)),
                     randColor(),
