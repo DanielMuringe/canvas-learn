@@ -13,7 +13,7 @@ let sum = (numbers = []) => {
 // SUbtract n from each item of a numeric array
 let reduceN = (numbers = [], n) => {
     let newNumbers = [];
-    for (const number of numbers) newNumbers.push(number-n);
+    for (const number of numbers) newNumbers.push(number - n);
     return newNumbers;
 }
 
@@ -83,7 +83,142 @@ let randColor = () => {
 }
 
 
+// Object in motion
+class MovingObject {
+
+    constructor(position = [0, 0], velocity = [1, 1], acceleration = [0, 0], maxVelocity = Infinity) {
+
+        this.dx_2 = acceleration[0];
+        this.dy_2 = acceleration[1];
+        this.velocity = () => [this.dx_2, this.dy_2];
+
+        this.dx = velocity[0];
+        this.dy = velocity[1];
+        this.velocity = () => [this.dx, this.dy];
+
+        this.x = position[0];
+        this.y = position[1];
+        this.position = () => [this.x, this.y];
+    }
+
+    move() {
+        if ((this.dy / this.dx) < this.maxVelocity) {
+            this.dx += this.dx_2;
+            this.dy += this.dy_2;
+        }
+
+        this.x += this.dx;
+        this.y += this.dy;
+    }
+
+    reverse_x() {
+        this.dx_2 *= -1;
+        this.dx *= -1;
+    }
+
+    reverse_y() {
+        this.dy_2 *= -1;
+        this.dy *= -1;
+    }
+
+}
+
+
+
+// Create bouncing balls
+class bouncingBalls extends MovingObject {
+
+    constructor(radius, centre = randCoord(), velocity=[1, 1], acceleration=[0, 0], color, thickness = 1, fill = true, canvas) {
+
+        super(centre, velocity, acceleration, 40);
+
+        this.radius = radius;
+
+        this.mass = (4 / 3) * Math.PI * (this.radius ** 3);
+
+        this.scale = [1, 1];
+
+        this.canvas = canvas;
+
+        this.color = color;
+
+        this.fill = fill;
+
+        this.thickness = thickness;
+
+        this.inProximity = (...coord) => distance(coord, this.position()) <= this.radius;
+    }
+
+    draw() {
+        // Mouse interactivity
+        let mouseProximity = this.inProximity(...this.canvas.mouse.position) && this.canvas.mouse.inWindow;
+        let radiusFactor = mouseProximity ? 2 : 1;
+        let radius = this.radius * radiusFactor;
+
+        // Draw circle on canvas
+        this.canvas.circle(radius, this.position(), this.color, this.thickness, this.fill);
+
+        // Contain circle on wall
+        let xImpactWall = this.x + this.radius >= window.innerWidth || this.x - this.radius <= 0;
+        if (xImpactWall) {
+            this.reverse_x();
+        }
+
+        let yImpactWall = this.y + this.radius >= window.innerHeight || this.y - this.radius <= 0;
+        if (yImpactWall) {
+            this.reverse_y();
+        }
+
+        // Move ball
+        this.move();
+    }
+
+    bounceBall(currentIndex, balls = []) {
+        for (const ball of balls.slice(0, currentIndex)) {
+            let other_centre = ball.position();
+            if (distance(this.position(), other_centre) <= (this.radius + other_centre + 10)) {
+                this.canvas.line(this.position(), other_centre, 1, this.color);
+            }
+        }
+    }
+}
+
+
 class Canvas {
+
+
+    render(obj = this) {
+
+        let balls = [];
+        let ballCount = (window.innerWidth + window.innerHeight) / 60;
+
+        for (let i = 0; i < ballCount; i++) {
+            let ball = new bouncingBalls(
+                randInt((window.innerWidth + window.innerHeight) / 70, (window.innerWidth + window.innerHeight) / 50),
+                randCoord(50),
+                randList(2, -4, 4, (val => val == 0)),
+                [0, 0],
+                randColor(),
+                randInt(1, 4),
+                false,
+                this
+            );
+            balls.push(ball);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            obj.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            for (let i = 0; i < balls.length; i++) {
+                const ball = balls[i];
+                ball.draw();
+                ball.bounceBall(i, balls);
+            }
+        }
+        animate()
+
+    }
+
 
     constructor() {
         // Create tag and assign attributes
@@ -96,103 +231,15 @@ class Canvas {
         this.defaultColor = '#000000';
 
         // Add object to locate position of mouse
-        this.mouse = { position: [], inWindow: false}
+        this.mouse = { position: [], inWindow: false }
         window.addEventListener('mousemove', event => this.mouse.position = [event.x, event.y]);
-        window.addEventListener('mouseover',  event => this.mouse.inWindow = true);
-        window.addEventListener('mouseout',  event => this.mouse.inWindow = false);
+        window.addEventListener('mouseover', event => this.mouse.inWindow = true);
+        window.addEventListener('mouseout', event => this.mouse.inWindow = false);
 
         // Render stuff on canvas
         this.render();
     }
 
-
-
-    render(obj = this) {
-
-        function bouncingBalls(radius, centre = randCoord(), velocity, color = obj.defaultColor, thickness = 1, fill = true) {
-            this.radius = radius;
-            this.centre = centre;
-            this.mass = (4 / 3) * Math.PI * (this.radius ** 3);
-
-            this.scale = [1, 1];
-
-            this.color = color;
-
-            let [x, y] = this.centre;
-            let [dx, dy] = this.velocity = velocity;
-
-            
-            this.inProximity = (...coord) => distance(coord, this.centre) <= this.radius;
-            
-            this.draw = () => {
-                // Mouse interactivity
-                let mouseProximity = this.inProximity(...obj.mouse.position);
-                if (this.inProximity(...obj.mouse.position)&&obj.mouse.inWindow) this.radius = radius*2;
-                else this.radius = radius;
-
-                // Draw circle on canvas
-                obj.circle(this.radius, this.centre, this.color, thickness, fill);
-
-            }
-            
-            this.bounceWall = () => {
-                // Create bounding effect of circle
-                let xImpactWall = x + this.radius >= window.innerWidth || x - this.radius <= 0;
-                let yImpactWall = y + this.radius >= window.innerHeight || y - this.radius <= 0;
-
-                if (xImpactWall) {
-                    dx *= -1;
-                }
-                if (yImpactWall) {
-                    dy *= -1;
-                }
-
-                x += dx; y += dy;
-
-                this.centre[0] = x; this.centre[1] = y;
-                this.velocity[0] = dx; this.velocity[1] = dy;
-
-
-            }
-
-            this.bounceBall = (currentIndex, balls = []) => {
-                for (const ball of balls.slice(0, currentIndex)) {
-                    if (distance(this.centre, ball.centre) <= (this.radius + ball.radius + 10)) {
-                        obj.line(this.centre, ball.centre, 1, this.color);
-                    }
-                }
-            }
-        }
-
-        let balls = [];
-        let ballCount = (window.innerWidth+window.innerHeight)/60;
-
-        for (let i = 0; i < ballCount; i++) {
-            balls.push(
-                new bouncingBalls(
-                    randInt((window.innerWidth+window.innerHeight)/70, (window.innerWidth+window.innerHeight)/50),
-                    randCoord(50),
-                    randList(2, -4, 4, (val => val == 0)),
-                    randColor(),
-                    randInt(1, 4),
-                    false
-                )
-            );
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            obj.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            for (let i = 0; i < balls.length; i++) {
-                const ball = balls[i];
-                ball.draw();
-                ball.bounceWall();
-                ball.bounceBall(i, balls);
-            }
-        }
-        animate()
-
-    }
 
     tagSetter(tag = this.tag) {
 
@@ -215,6 +262,7 @@ class Canvas {
         );
     }
 
+
     line(begin = [0, 0], end = [1, 1], thickness = 1, color = this.defaultColor, func = (context) => null) {
         this.ctx.lineWidth = thickness;
         this.ctx.strokeStyle = color;
@@ -225,12 +273,14 @@ class Canvas {
         this.ctx.stroke();
     }
 
+
     square(dimensions = [100, 100], position = [0, 0], color = this.defaultColor, func = (context) => null) {
         this.ctx.beginPath();
         this.ctx.fillStyle = color;
         func(this.ctx);
         this.ctx.fillRect(...position, ...dimensions);
     }
+
 
     circle(radius = 1, centre = [0, 0], color = this.defaultColor, thickness = 1, fill = true, func = (context) => null) {
         this.ctx.strokeStyle = color;
