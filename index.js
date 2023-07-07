@@ -19,58 +19,6 @@ let reduceN = (numbers = [], n) => {
 }
 
 
-// Class for handling vectors
-class Vector extends Array {
-
-    constructor(...vals) {
-        for (const val of vals) {
-            if (!(typeof val == 'number')) {
-                throw EvalError('Vector item is not of type number');
-            }
-        }
-        super(...vals);
-    }
-
-    assertLengthsMatch(otherVector) {
-        if (this.length != otherVector.length) {
-            throw EvalError('Vectors lengths do not match');
-            return false;
-        }
-        return true;
-    }
-
-    otherOperation(otherVector, operation) {
-        this.assertLengthsMatch(otherVector);
-        for (let i = 0; i < this.length; i++) {
-            this[i] = operation(this[i], otherVector[i]);
-        }
-    }
-
-    selfOperation(operation) {
-        for (let i = 0; i < this.length; i++) {
-            this[i] = operation(this[i]);
-        }
-    }
-
-    add(otherVector) {
-        return this.otherOperation(otherVector, (v1, v2) => v1 + v2);
-    }
-
-    subtract(otherVector) {
-        return this.otherOperation(otherVector, (v1, v2) => v1 - v2);
-    }
-
-    innerProduct(otherVector) {
-        return sum(this.otherOperation(otherVector, (v1, v2) => v1 * v2));
-    }
-
-    scale(scalar) {
-        return this.selfOperation(v => v * scalar);
-    }
-
-}
-
-
 // Square function
 let sqr = num => num ** 2;
 
@@ -91,6 +39,70 @@ let intersection = (firstPoint, secondPoint, ratio) => {
     let [a, b] = [ratio[1] / sum(ratio), ratio[0] / sum(ratio)];
     let [x, y] = [(a * firstPoint[0] + b * secondPoint[0]), (a * firstPoint[1] + b * secondPoint[1])];
     return [x, y]
+}
+
+
+// Class for handling vectors
+class Vector extends Array {
+
+    constructor(...vals) {
+        for (const val of vals) {
+            if (!(typeof val == 'number')) {
+                throw EvalError('Vector item is not of type number');
+            }
+        }
+        super(...vals);
+    }
+
+    assertLengthsMatch(otherVector) {
+        if (this.length != otherVector.length) {
+            throw EvalError('Vectors lengths do not match');
+            return false;
+        }
+        return true;
+    }
+
+    biVectorOperation(otherVector, operation) {
+        let resultVector = new Vector();
+        this.assertLengthsMatch(otherVector);
+        for (let i = 0; i < this.length; i++) {
+            resultVector.push(operation(this[i], otherVector[i]));
+        }
+        return resultVector;
+    }
+
+    uniVectorOperation(operation) {
+        let resultVector = new Vector();
+        for (let i = 0; i < this.length; i++) {
+            resultVector.push(operation(this[i]));
+        }
+        return resultVector;
+    }
+
+    add(otherVector) {
+        return this.biVectorOperation(otherVector, (v1, v2) => v1 + v2);
+    }
+
+    subtract(otherVector) {
+        return this.biVectorOperation(otherVector, (v1, v2) => v1 - v2);
+    }
+
+    innerProduct(otherVector) {
+        return sum(this.biVectorOperation(otherVector, (v1, v2) => v1 * v2));
+    }
+
+    scale(scalar) {
+        return this.uniVectorOperation(v => v * scalar);
+    }
+
+    transform(matrix) {
+        return this.biVectorOperation(matrix, (v, row) => this.innerProduct(row));
+    }
+
+    getMagnitude() {
+        return distance([0, 0], this);
+    }
+
 }
 
 
@@ -139,36 +151,30 @@ let randColor = () => {
 // Object in motion
 class MovingObject {
 
-    constructor(position = new Vector(0, 0), velocity = new Vector(1, 1), acceleration = new Vector(0, 0), maxVelocity = Infinity) {
+    constructor(position = new Vector(0, 0), velocity = new Vector(1, 1), acceleration = new Vector(0, 0), maxVelocity = Infinity, dimension=2) {
 
-        this.dx_2 = acceleration[0];
-        this.dy_2 = acceleration[1];
         this.acceleration = acceleration;
 
-        this.dx = velocity[0];
-        this.dy = velocity[1];
         this.velocity = velocity;
 
-        this.x = position[0];
-        this.y = position[1];
         this.position = position;
     }
 
     move() {
-        this.velocity.add(this.acceleration);
-        this.position.add(this.velocity);
+        this.velocity = this.velocity.add(this.acceleration);
+        this.position = this.position.add(this.velocity);
     }
 
     reverse_x() {
-        this.acceleration[0] *= -1;
-        this.velocity[0] *= -1;
+        let xReverseMatrix = [[-1, 0], [0, 1]];
+        this.acceleration = this.acceleration.transform(xReverseMatrix);
+        this.velocity = this.velocity.transform(xReverseMatrix);
     }
 
     reverse_y() {
-        this.acceleration[1] *= -1;
-        this.velocity[1] *= -1;
-
-        console.log(this.velocity);
+        let yReverseMatrix = [[1, 0], [0, -1]];
+        this.acceleration = this.acceleration.transform(yReverseMatrix);
+        this.velocity = this.velocity.transform(yReverseMatrix);
     }
 
     collision(otherMovingObject) {
@@ -192,7 +198,7 @@ class bouncingBalls extends MovingObject {
         canvas
     ) {
 
-        super(centre, velocity, acceleration, 40);
+        super(centre, velocity, acceleration, 40, 2);
 
         this.radius = radius;
 
@@ -221,12 +227,12 @@ class bouncingBalls extends MovingObject {
         this.canvas.circle(radius, this.position, this.color, this.thickness, this.fill);
 
         // Contain circle on wall
-        let xImpactWall = this.x + this.radius >= window.innerWidth || this.x - this.radius <= 0;
+        let xImpactWall = this.position[0] + this.radius >= window.innerWidth || this.position[0] - this.radius <= 0;
         if (xImpactWall) {
             this.reverse_x();
         }
 
-        let yImpactWall = this.y + this.radius >= window.innerHeight || this.y - this.radius <= 0;
+        let yImpactWall = this.position[1] + this.radius >= window.innerHeight || this.position[1] - this.radius <= 0;
         if (yImpactWall) {
             this.reverse_y();
         }
