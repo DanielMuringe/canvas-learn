@@ -54,7 +54,7 @@ class Vector extends Array {
         super(...vals);
     }
 
-    assertLengthsMatch(otherVector) {
+    #assertLengthsMatch(otherVector) {
         if (this.length != otherVector.length) {
             throw EvalError('Vectors lengths do not match');
             return false;
@@ -62,45 +62,46 @@ class Vector extends Array {
         return true;
     }
 
-    biVectorOperation(otherVector, operation) {
-        let resultVector = new Vector();
-        this.assertLengthsMatch(otherVector);
+    #biVectorOperation(otherVector, operation) {
+        this.#assertLengthsMatch(otherVector);
         for (let i = 0; i < this.length; i++) {
-            resultVector.push(operation(this[i], otherVector[i]));
+            this[i] = operation(this[i], otherVector[i]);
         }
-        return resultVector;
     }
 
     uniVectorOperation(operation) {
-        let resultVector = new Vector();
         for (let i = 0; i < this.length; i++) {
-            resultVector.push(operation(this[i]));
+            this[i] = operation(this[i]);
         }
-        return resultVector;
     }
 
     add(otherVector) {
-        return this.biVectorOperation(otherVector, (v1, v2) => v1 + v2);
+        this.#biVectorOperation(otherVector, (v1, v2) => v1 + v2);
     }
 
     subtract(otherVector) {
-        return this.biVectorOperation(otherVector, (v1, v2) => v1 - v2);
+        this.#biVectorOperation(otherVector, (v1, v2) => v1 - v2);
     }
 
     innerProduct(otherVector) {
-        return sum(this.biVectorOperation(otherVector, (v1, v2) => v1 * v2));
+        this.#assertLengthsMatch(otherVector);
+        let resultVector = new Vector();
+        for (let i = 0; i < this.length; i++) {
+            resultVector.push(otherVector[i] * this[i]);
+        }
+        return sum(resultVector);
     }
 
     scale(scalar) {
-        return this.uniVectorOperation(v => v * scalar);
+        this.uniVectorOperation(v => v * scalar);
     }
 
     transform(matrix) {
-        return this.biVectorOperation(matrix, (v, row) => this.innerProduct(row));
-    }
-
-    getMagnitude() {
-        return distance([0, 0], this);
+        let resultVector = new Vector();
+        for (let i = 0; i < this.length; i++) {
+            resultVector.push(this.innerProduct(matrix[i]));
+        }
+        this.#biVectorOperation(resultVector, (v1, v2) => v2);
     }
 
 }
@@ -151,30 +152,27 @@ let randColor = () => {
 // Object in motion
 class MovingObject {
 
-    constructor(position = new Vector(0, 0), velocity = new Vector(1, 1), acceleration = new Vector(0, 0), maxVelocity = Infinity, dimension=2) {
-
+    constructor(position = new Vector(0, 0), velocity = new Vector(1, 1), acceleration = new Vector(0, 0), maxVelocity = Infinity, dimension = 2) {
         this.acceleration = acceleration;
-
         this.velocity = velocity;
-
         this.position = position;
     }
 
     move() {
-        this.velocity = this.velocity.add(this.acceleration);
-        this.position = this.position.add(this.velocity);
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
     }
 
     reverse_x() {
         let xReverseMatrix = [[-1, 0], [0, 1]];
-        this.acceleration = this.acceleration.transform(xReverseMatrix);
-        this.velocity = this.velocity.transform(xReverseMatrix);
+        this.acceleration.transform(xReverseMatrix);
+        this.velocity.transform(xReverseMatrix);
     }
 
     reverse_y() {
         let yReverseMatrix = [[1, 0], [0, -1]];
-        this.acceleration = this.acceleration.transform(yReverseMatrix);
-        this.velocity = this.velocity.transform(yReverseMatrix);
+        this.acceleration.transform(yReverseMatrix);
+        this.velocity.transform(yReverseMatrix);
     }
 
     collision(otherMovingObject) {
@@ -195,8 +193,7 @@ class bouncingBalls extends MovingObject {
         color,
         thickness = 1,
         fill = true,
-        canvas
-    ) {
+        canvas) {
 
         super(centre, velocity, acceleration, 40, 2);
 
@@ -222,10 +219,7 @@ class bouncingBalls extends MovingObject {
         let mouseProximity = this.inProximity(...this.canvas.mouse.position) && this.canvas.mouse.inWindow;
         let radiusFactor = mouseProximity ? 2 : 1;
         let radius = this.radius * radiusFactor;
-
-        // Draw circle on canvas
-        this.canvas.circle(radius, this.position, this.color, this.thickness, this.fill);
-
+        
         // Contain circle on wall
         let xImpactWall = this.position[0] + this.radius >= window.innerWidth || this.position[0] - this.radius <= 0;
         if (xImpactWall) {
@@ -237,15 +231,19 @@ class bouncingBalls extends MovingObject {
             this.reverse_y();
         }
 
+        // Draw circle on canvas
+        this.canvas.circle(radius, this.position, this.color, this.thickness, this.fill);
+
         // Move ball
         this.move();
     }
 
     impactBall(currentIndex, balls = []) {
         for (const ball of balls.slice(0, currentIndex)) {
-            let other_centre = ball.position;
-            if (distance(this.position, other_centre) <= (this.radius + other_centre + 10)) {
-                this.canvas.line(this.position, other_centre, 1, this.color);
+            let otherCentre = ball.position;
+            console.log(otherCentre);
+            if (distance(this.position, otherCentre) <= (this.radius + otherCentre)) {
+                this.canvas.line(this.position, otherCentre, 1, this.color);
             }
         }
     }
@@ -258,11 +256,12 @@ class Canvas {
     render(obj = this) {
 
         let balls = [];
-        let ballCount = (window.innerWidth + window.innerHeight) / 60;
+        let ballCount = 10;
 
         for (let i = 0; i < ballCount; i++) {
             let ball = new bouncingBalls(
-                randInt((window.innerWidth + window.innerHeight) / 70, (window.innerWidth + window.innerHeight) / 50),
+                20,
+                // randInt((window.innerWidth + window.innerHeight) / 70, (window.innerWidth + window.innerHeight) / 50),
                 new Vector(...randCoord(50)),
                 new Vector(...randList(2, -4, 4, (val => val == 0))),
                 new Vector(...[0, 0]),
@@ -331,26 +330,24 @@ class Canvas {
     }
 
 
-    line(begin = [0, 0], end = [1, 1], thickness = 1, color = this.defaultColor, func = (context) => null) {
+    line(begin = [0, 0], end = [1, 1], thickness = 1, color = this.defaultColor) {
         this.ctx.lineWidth = thickness;
         this.ctx.strokeStyle = color;
         this.ctx.beginPath();
         this.ctx.moveTo(...begin);
         this.ctx.lineTo(...end);
-        func(this.context);
         this.ctx.stroke();
     }
 
 
-    square(dimensions = [100, 100], position = [0, 0], color = this.defaultColor, func = (context) => null) {
-        this.ctx.beginPath();
+    square(dimensions = [100, 100], position = [0, 0], color = this.defaultColor) {
         this.ctx.fillStyle = color;
-        func(this.ctx);
+        this.ctx.beginPath();
         this.ctx.fillRect(...position, ...dimensions);
     }
 
 
-    circle(radius = 1, centre = [0, 0], color = this.defaultColor, thickness = 1, fill = true, func = (context) => null) {
+    circle(radius = 1, centre = [0, 0], color = this.defaultColor, thickness = 1, fill = true) {
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = thickness;
         this.ctx.beginPath();
@@ -359,7 +356,6 @@ class Canvas {
             this.ctx.fillStyle = color;
             this.ctx.fill();
         }
-        func(this.ctx);
         this.ctx.stroke();
     }
 }
