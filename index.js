@@ -1,5 +1,6 @@
-const bodyTag = document.getElementsByTagName('body')[0]
-const headTag = document.getElementsByTagName('head')[0]
+// Access document head and body
+const BODY = document.body;
+const HEAD = document.head;
 
 
 // Sum of items in a numeric array
@@ -10,11 +11,63 @@ let sum = (numbers = []) => {
 }
 
 
-// SUbtract n from each item of a numeric array
+// Subtract n from each item of a numeric array
 let reduceN = (numbers = [], n) => {
     let newNumbers = [];
     for (const number of numbers) newNumbers.push(number - n);
     return newNumbers;
+}
+
+
+// Class for handling vectors
+class Vector extends Array {
+
+    constructor(...vals) {
+        for (const val of vals) {
+            if (!(typeof val == 'number')) {
+                throw EvalError('Vector item is not of type number');
+            }
+        }
+        super(...vals);
+    }
+
+    assertLengthsMatch(otherVector) {
+        if (this.length != otherVector.length) {
+            throw EvalError('Vectors lengths do not match');
+            return false;
+        }
+        return true;
+    }
+
+    otherOperation(otherVector, operation) {
+        this.assertLengthsMatch(otherVector);
+        for (let i = 0; i < this.length; i++) {
+            this[i] = operation(this[i], otherVector[i]);
+        }
+    }
+
+    selfOperation(operation) {
+        for (let i = 0; i < this.length; i++) {
+            this[i] = operation(this[i]);
+        }
+    }
+
+    add(otherVector) {
+        return this.otherOperation(otherVector, (v1, v2) => v1 + v2);
+    }
+
+    subtract(otherVector) {
+        return this.otherOperation(otherVector, (v1, v2) => v1 - v2);
+    }
+
+    innerProduct(otherVector) {
+        return sum(this.otherOperation(otherVector, (v1, v2) => v1 * v2));
+    }
+
+    scale(scalar) {
+        return this.selfOperation(v => v * scalar);
+    }
+
 }
 
 
@@ -86,49 +139,58 @@ let randColor = () => {
 // Object in motion
 class MovingObject {
 
-    constructor(position = [0, 0], velocity = [1, 1], acceleration = [0, 0], maxVelocity = Infinity) {
+    constructor(position = new Vector(0, 0), velocity = new Vector(1, 1), acceleration = new Vector(0, 0), maxVelocity = Infinity) {
 
         this.dx_2 = acceleration[0];
         this.dy_2 = acceleration[1];
-        this.velocity = () => [this.dx_2, this.dy_2];
+        this.acceleration = acceleration;
 
         this.dx = velocity[0];
         this.dy = velocity[1];
-        this.velocity = () => [this.dx, this.dy];
+        this.velocity = velocity;
 
         this.x = position[0];
         this.y = position[1];
-        this.position = () => [this.x, this.y];
+        this.position = position;
     }
 
     move() {
-        if ((this.dy / this.dx) < this.maxVelocity) {
-            this.dx += this.dx_2;
-            this.dy += this.dy_2;
-        }
-
-        this.x += this.dx;
-        this.y += this.dy;
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
     }
 
     reverse_x() {
-        this.dx_2 *= -1;
-        this.dx *= -1;
+        this.acceleration[0] *= -1;
+        this.velocity[0] *= -1;
     }
 
     reverse_y() {
-        this.dy_2 *= -1;
-        this.dy *= -1;
+        this.acceleration[1] *= -1;
+        this.velocity[1] *= -1;
+
+        console.log(this.velocity);
+    }
+
+    collision(otherMovingObject) {
+
     }
 
 }
 
 
-
 // Create bouncing balls
 class bouncingBalls extends MovingObject {
 
-    constructor(radius, centre = randCoord(), velocity=[1, 1], acceleration=[0, 0], color, thickness = 1, fill = true, canvas) {
+    constructor(
+        radius,
+        centre = new Vector(...randCoord()),
+        velocity = new Vector(1, 1),
+        acceleration = new Vector(0, 0),
+        color,
+        thickness = 1,
+        fill = true,
+        canvas
+    ) {
 
         super(centre, velocity, acceleration, 40);
 
@@ -146,7 +208,7 @@ class bouncingBalls extends MovingObject {
 
         this.thickness = thickness;
 
-        this.inProximity = (...coord) => distance(coord, this.position()) <= this.radius;
+        this.inProximity = (...coord) => distance(coord, this.position) <= this.radius;
     }
 
     draw() {
@@ -156,7 +218,7 @@ class bouncingBalls extends MovingObject {
         let radius = this.radius * radiusFactor;
 
         // Draw circle on canvas
-        this.canvas.circle(radius, this.position(), this.color, this.thickness, this.fill);
+        this.canvas.circle(radius, this.position, this.color, this.thickness, this.fill);
 
         // Contain circle on wall
         let xImpactWall = this.x + this.radius >= window.innerWidth || this.x - this.radius <= 0;
@@ -173,11 +235,11 @@ class bouncingBalls extends MovingObject {
         this.move();
     }
 
-    bounceBall(currentIndex, balls = []) {
+    impactBall(currentIndex, balls = []) {
         for (const ball of balls.slice(0, currentIndex)) {
-            let other_centre = ball.position();
-            if (distance(this.position(), other_centre) <= (this.radius + other_centre + 10)) {
-                this.canvas.line(this.position(), other_centre, 1, this.color);
+            let other_centre = ball.position;
+            if (distance(this.position, other_centre) <= (this.radius + other_centre + 10)) {
+                this.canvas.line(this.position, other_centre, 1, this.color);
             }
         }
     }
@@ -195,9 +257,9 @@ class Canvas {
         for (let i = 0; i < ballCount; i++) {
             let ball = new bouncingBalls(
                 randInt((window.innerWidth + window.innerHeight) / 70, (window.innerWidth + window.innerHeight) / 50),
-                randCoord(50),
-                randList(2, -4, 4, (val => val == 0)),
-                [0, 0],
+                new Vector(...randCoord(50)),
+                new Vector(...randList(2, -4, 4, (val => val == 0))),
+                new Vector(...[0, 0]),
                 randColor(),
                 randInt(1, 4),
                 false,
@@ -212,7 +274,7 @@ class Canvas {
             for (let i = 0; i < balls.length; i++) {
                 const ball = balls[i];
                 ball.draw();
-                ball.bounceBall(i, balls);
+                ball.impactBall(i, balls);
             }
         }
         animate()
@@ -224,7 +286,7 @@ class Canvas {
         // Create tag and assign attributes
         this.tag = document.createElement('canvas');
         this.tagSetter();
-        bodyTag.appendChild(this.tag);
+        BODY.appendChild(this.tag);
 
         // Draw using context
         this.ctx = this.tag.getContext('2d');
