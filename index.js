@@ -1,3 +1,5 @@
+"use strict";
+
 // Access document head and body
 const BODY = document.body;
 const HEAD = document.head;
@@ -19,20 +21,8 @@ let reduceN = (numbers = [], n) => {
 }
 
 
-// Square function
-let sqr = num => num ** 2;
-
-
 // Convert degrees value to radians
 let degreesToRadians = degrees => (2 * Math.PI) * (degrees / 360)
-
-
-// Get intersection of 2 points based on ratio
-let intersection = (firstPoint, secondPoint, ratio) => {
-    let [a, b] = [ratio[1] / sum(ratio), ratio[0] / sum(ratio)];
-    let [x, y] = [(a * firstPoint[0] + b * secondPoint[0]), (a * firstPoint[1] + b * secondPoint[1])];
-    return [x, y]
-}
 
 
 // Class for handling vectors
@@ -47,10 +37,13 @@ class Vector extends Array {
         super(...vals);
     }
 
+    copy() {
+        return new Vector(...this);
+    }
+
     assertLengthsMatch(otherVector) {
         if (this.length != otherVector.length) {
-            console.error(otherVector);
-            throw EvalError('Vectors lengths do not match');
+            throw EvalError('Vectors lengths do not match ' + this.length + " : " + otherVector.length);
         }
         return true;
     }
@@ -77,11 +70,8 @@ class Vector extends Array {
     }
 
     innerProduct(otherVector) {
-        this.assertLengthsMatch(otherVector);
-        let resultVector = new Vector();
-        for (let i = 0; i < this.length; i++) {
-            resultVector.push(otherVector[i] * this[i]);
-        }
+        let resultVector = this.copy();
+        resultVector.iBiVectorOperation(otherVector, (v1, v2) => v1 * v2);
         return sum(resultVector);
     }
 
@@ -90,19 +80,31 @@ class Vector extends Array {
     }
 
     iTransform(matrix) {
-        let resultVector = new Vector();
-        for (let i = 0; i < this.length; i++) {
-            resultVector.push(this.innerProduct(matrix[i]));
-        }
+        let resultVector = this.copy();
+        resultVector.iBiVectorOperation(matrix, (v1, row) => this.innerProduct(row));
         this.iBiVectorOperation(resultVector, (v1, v2) => v2);
     }
 
     distance(otherVector) {
-        let copyVector = new Vector();
-        this.forEach(v => copyVector.push(v));
-        copyVector.iSub(otherVector);
-        copyVector.iUniVectorOperation(v1 => v1**2);
-        return Math.sqrt(sum(copyVector));
+        let vectorCopy = this.copy();
+        vectorCopy.iSub(otherVector);
+        return vectorCopy.getMagnitude();
+    }
+
+    intersection(otherVector, ratio) {
+        let vectorCopy = this.copy();
+        let otherVectorCopy = otherVector.copy();
+        let [a, b] = [ratio[1] / sum(ratio), ratio[0] / sum(ratio)];
+        vectorCopy.iScale(a);
+        otherVectorCopy.iScale(b);
+        vectorCopy.iAdd(otherVectorCopy);
+        return vectorCopy;
+    }
+
+    getMagnitude() {
+        let vectorCopy = this.copy();
+        vectorCopy.iUniVectorOperation(v1 => v1 ** 2);
+        return Math.sqrt(sum(vectorCopy));
     }
 
 }
@@ -177,9 +179,31 @@ class MovingObject {
         this.velocity.iTransform(yReverseMatrix);
     }
 
-    collision(otherMovingObject, contactPoint) {
-    }
+    collision(otherMovingObject = new MovingObject(), contactPoint) {
 
+        let [m1, m2] = [this.mass, otherMovingObject.mass];
+        let [v1, v2] = [this.velocity, otherMovingObject.velocity];
+        let [x1, x2] = [this.position, otherMovingObject.position];
+
+        let [a1, a2] = [(2 * m1) / sum([m1 + m2]), (2 * m2) / sum([m1 + m2])];
+
+        let [vb1, v2b1] = [v1.copy(), v2.copy()];
+        vb1.iSub(v2b1);
+        let [xb1, x2b1] = [x1.copy(), x2.copy()];
+        xb1.iSub(x2b1);
+        let b1 = (vb1.innerProduct(xb1) / (xb1.getMagnitude() ** 2));
+        xb1.iScale(a1 * b1);
+        this.velocity.iSub(xb1);
+
+        let [vb2, v2b2] = [v2.copy(), v1.copy()];
+        vb2.iSub(v2b2);
+        let [xb2, x2b2] = [x2.copy(), x1.copy()];
+        xb2.iSub(x2b2);
+        let b2 = (vb2.innerProduct(xb2) / (xb2.getMagnitude() ** 2));
+        xb2.iScale(a2 * b2);
+        otherMovingObject.velocity.iSub(xb2);
+
+    }
 }
 
 
@@ -196,7 +220,7 @@ class bouncingBalls extends MovingObject {
         fill = true,
         canvas) {
 
-        super(centre, velocity, acceleration, (4 / 3) * Math.PI * (radius ** 3), 40, 2);
+        super(centre, velocity, acceleration, (4 / 3) * Math.PI * (radius ** 3), 10, 2);
 
         this.radius = radius;
 
@@ -210,12 +234,12 @@ class bouncingBalls extends MovingObject {
 
         this.thickness = thickness;
 
-        this.inProximity = (...coord) => this.position.distance(coord) <= this.radius;
+        this.inProximity = (coord) => this.position.distance(coord) <= this.radius;
     }
 
     draw() {
         // Mouse interactivity
-        let mouseProximity = this.inProximity(...this.canvas.mouse.position) && this.canvas.mouse.inWindow;
+        let mouseProximity = this.inProximity(this.canvas.mouse.position) && this.canvas.mouse.inWindow;
         let radiusFactor = mouseProximity ? 2 : 1;
         let radius = this.radius * radiusFactor;
 
@@ -240,9 +264,9 @@ class bouncingBalls extends MovingObject {
     impactBall(currentIndex, balls = []) {
         for (const ball of balls.slice(0, currentIndex)) {
             let otherCentre = ball.position;
-            let impactPoint = intersection(this.position, otherCentre, [this.radius, ball.radius]);
-            if (this.position.distance(otherCentre) <= (this.radius + ball.radius)) {
-                this.canvas.line(this.position, impactPoint, 1, this.color);
+            if (this.position.distance(otherCentre) <= (this.radius + ball.radius + this.velocity[0])) {
+                this.collision(ball);
+                // this.canvas.line(this.position, otherCentre, 1, this.color);
             }
         }
     }
@@ -255,13 +279,13 @@ class Canvas {
     render(obj = this) {
 
         let balls = [];
-        let ballCount = 10;
+        let ballCount = 5;
 
         for (let i = 0; i < ballCount; i++) {
             let ball = new bouncingBalls(
                 randInt((window.innerWidth + window.innerHeight) / 70, (window.innerWidth + window.innerHeight) / 50),
                 new Vector(...randCoord(50)),
-                new Vector(...randList(2, -4, 4, (val => val == 0))),
+                new Vector(...randList(2, -5, 5, (val => val == 0))),
                 new Vector(...[0, 0]),
                 randColor(),
                 randInt(1, 4),
@@ -296,8 +320,8 @@ class Canvas {
         this.defaultColor = '#000000';
 
         // Add object to locate position of mouse
-        this.mouse = { position: [], inWindow: false }
-        window.addEventListener('mousemove', event => this.mouse.position = [event.x, event.y]);
+        this.mouse = { position: new Vector(NaN, NaN), inWindow: false }
+        window.addEventListener('mousemove', event => this.mouse.position = new Vector(event.x, event.y));
         window.addEventListener('mouseover', event => this.mouse.inWindow = true);
         window.addEventListener('mouseout', event => this.mouse.inWindow = false);
 
@@ -359,5 +383,5 @@ class Canvas {
 }
 
 
-CANVAS = new Canvas();
+const CANVAS = new Canvas();
 
