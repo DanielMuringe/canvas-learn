@@ -13,14 +13,6 @@ let sum = (numbers = []) => {
 }
 
 
-// Subtract n from each item of a numeric array
-let reduceN = (numbers = [], n) => {
-    let newNumbers = [];
-    for (const number of numbers) newNumbers.push(number - n);
-    return newNumbers;
-}
-
-
 // Convert degrees value to radians
 let degreesToRadians = degrees => (2 * Math.PI) * (degrees / 360)
 
@@ -179,7 +171,7 @@ class MovingObject {
         this.velocity.iTransform(yReverseMatrix);
     }
 
-    collision(otherMovingObject = new MovingObject(), contactPoint) {
+    collision(otherMovingObject = new MovingObject()) {
 
         let [m1, m2] = [this.mass, otherMovingObject.mass];
         let [v1, v2] = [this.velocity, otherMovingObject.velocity];
@@ -220,9 +212,9 @@ class bouncingBalls extends MovingObject {
         fill = true,
         canvas) {
 
-        super(centre, velocity, acceleration, (4 / 3) * Math.PI * (radius ** 3), 10, 2);
+        super(centre, velocity, acceleration, Math.PI * (radius ** 2), 10, 2);
 
-        this.radius = radius;
+        this.radius = radius + (thickness / 2);
 
         this.scale = [1, 1];
 
@@ -242,20 +234,24 @@ class bouncingBalls extends MovingObject {
         let mouseProximity = this.inProximity(this.canvas.mouse.position) && this.canvas.mouse.inWindow;
         let radiusFactor = mouseProximity ? 2 : 1;
         let radius = this.radius * radiusFactor;
+        let R = new Vector(radius, radius);
+        let sc = 1.2;
 
         // Contain circle on wall
-        let xImpactWall = this.position[0] + this.radius >= window.innerWidth || this.position[0] - this.radius <= 0;
+        let xImpactWall = ((this.position[0] + this.radius >= this.canvas.width) || (this.position[0] - this.radius <= 0));
         if (xImpactWall) {
             this.reverse_x();
+            R.iTransform([[1, 0], [0, sc]]);
         }
 
-        let yImpactWall = this.position[1] + this.radius >= window.innerHeight || this.position[1] - this.radius <= 0;
+        let yImpactWall = ((this.position[1] + this.radius >= this.canvas.height) || (this.position[1] - this.radius <= 0));
         if (yImpactWall) {
             this.reverse_y();
+            R.iTransform([[sc, 0], [0, 1]]);
         }
 
         // Draw circle on canvas
-        this.canvas.circle(radius, this.position, this.color, this.thickness, this.fill);
+        this.canvas.oval(R, this.position, this.color, this.thickness, this.fill);
 
         // Move ball
         this.move();
@@ -264,95 +260,63 @@ class bouncingBalls extends MovingObject {
     impactBall(currentIndex, balls = []) {
         for (const ball of balls.slice(0, currentIndex)) {
             let otherCentre = ball.position;
-            if (this.position.distance(otherCentre) <= (this.radius + ball.radius + this.velocity[0])) {
-                this.collision(ball);
-                // this.canvas.line(this.position, otherCentre, 1, this.color);
+            if (this.position.distance(otherCentre) <= (this.radius + ball.radius)) {
+                this.canvas.line(this.position, otherCentre, 1, this.color);
+                // this.collision(ball);
+                // ball.reverse_x();
+                // ball.reverse_y();
             }
         }
     }
+
 }
 
 
 class Canvas {
 
 
-    render(obj = this) {
+    constructor(render = () => { }) {
 
-        let balls = [];
-        let ballCount = 5;
-
-        for (let i = 0; i < ballCount; i++) {
-            let ball = new bouncingBalls(
-                randInt((window.innerWidth + window.innerHeight) / 70, (window.innerWidth + window.innerHeight) / 50),
-                new Vector(...randCoord(50)),
-                new Vector(...randList(2, -5, 5, (val => val == 0))),
-                new Vector(...[0, 0]),
-                randColor(),
-                randInt(1, 4),
-                false,
-                this
-            );
-            balls.push(ball);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            obj.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            for (let i = 0; i < balls.length; i++) {
-                const ball = balls[i];
-                ball.draw();
-                ball.impactBall(i, balls);
-            }
-        }
-        animate()
-
-    }
-
-
-    constructor() {
         // Create tag and assign attributes
         this.tag = document.createElement('canvas');
-        this.tagSetter();
+        this.tag.id = 'canvas';
+        this.defaultColor = 'rgb(0, 15, 46)';
+        this.tag.style.backgroundColor = this.defaultColor;
+
+        // Set canvas dimensions
+        this.width = this.tag.width = window.innerWidth;
+        this.height = this.tag.height = window.innerHeight;
+        window.addEventListener(
+            'resize',
+            (event) => {
+                this.width = this.tag.width = event.currentTarget.innerWidth;
+                this.height = this.tag.height = event.currentTarget.innerHeight;
+            }
+        );
+
         BODY.appendChild(this.tag);
 
         // Draw using context
         this.ctx = this.tag.getContext('2d');
-        this.defaultColor = '#000000';
 
         // Add object to locate position of mouse
         this.mouse = { position: new Vector(NaN, NaN), inWindow: false }
         window.addEventListener('mousemove', event => this.mouse.position = new Vector(event.x, event.y));
-        window.addEventListener('mouseover', event => this.mouse.inWindow = true);
-        window.addEventListener('mouseout', event => this.mouse.inWindow = false);
+        window.addEventListener('mouseover', () => this.mouse.inWindow = true);
+        window.addEventListener('mouseout', () => this.mouse.inWindow = false);
 
         // Render stuff on canvas
-        this.render();
+        render(this);
     }
 
 
-    tagSetter(tag = this.tag) {
+    line(
+        begin = [0, 0],
+        end = [1, 1],
+        thickness = 1,
+        color = this.defaultColor
+    ) {
 
-        // Add styling to canvas
-        this.styling = {
-            'background-color': 'rgb(0, 15, 46)'
-        }
-        for (const key in this.styling)
-            tag.style.setProperty(key, this.styling[key]);
-
-        // Set canvas dimensions
-        tag.width = window.innerWidth;
-        tag.height = window.innerHeight;
-        window.addEventListener(
-            'resize',
-            (event) => {
-                tag.width = event.currentTarget.innerWidth;
-                tag.height = event.currentTarget.innerHeight;
-            }
-        );
-    }
-
-
-    line(begin = [0, 0], end = [1, 1], thickness = 1, color = this.defaultColor) {
         this.ctx.lineWidth = thickness;
         this.ctx.strokeStyle = color;
         this.ctx.beginPath();
@@ -362,26 +326,93 @@ class Canvas {
     }
 
 
-    square(dimensions = [100, 100], position = [0, 0], color = this.defaultColor) {
+    square(
+        dimensions = [100, 100],
+        position = [0, 0],
+        color = this.defaultColor,
+        thickness = 1
+    ) {
+
         this.ctx.fillStyle = color;
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = thickness;
         this.ctx.beginPath();
         this.ctx.fillRect(...position, ...dimensions);
     }
 
 
-    circle(radius = 1, centre = [0, 0], color = this.defaultColor, thickness = 1, fill = true) {
+    arc(
+        radius = 1,
+        centre = Vector(0, 0),
+        color = this.defaultColor,
+        thickness = 1,
+        fill = true,
+        rotation = 360,
+        clockwise = true
+    ) {
+
+        this.ctx.fillStyle = color;
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = thickness;
         this.ctx.beginPath();
-        this.ctx.arc(...centre, radius, 0, degreesToRadians(360), 1);
+        this.ctx.arc(...centre, radius, 0, degreesToRadians(rotation), !clockwise);
+        this.ctx.stroke();
         if (fill) {
-            this.ctx.fillStyle = color;
             this.ctx.fill();
         }
-        this.ctx.stroke();
     }
+
+
+    oval(radius = Vector(1, 1),
+        centre = Vector(0, 0),
+        color = this.defaultColor,
+        thickness = 1,
+        fill = true) {
+
+        this.ctx.fillStyle = color;
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = thickness;
+        this.ctx.beginPath();
+        this.ctx.ellipse(...centre, ...radius, 0, 0, degreesToRadians(360), 1);
+        this.ctx.stroke();
+        if (fill) {
+            this.ctx.fill();
+        }
+    }
+
+
 }
 
 
-const CANVAS = new Canvas();
+const CANVAS = new Canvas(
 
+    (canvas) => {
+        let balls = [];
+        let ballCount = 15;
+        for (let i = 1; i <= ballCount; i++) {
+            let ball = new bouncingBalls(
+                randInt(20, 40),
+                new Vector(...randCoord(50)),
+                new Vector(...randList(2, -5, 5, (val => val == 0))),
+                new Vector(...[0, 0]),
+                randColor(),
+                randInt(2, 6),
+                false,
+                canvas
+            );
+            balls.push(ball);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < balls.length; i++) {
+                const ball = balls[i];
+                ball.draw();
+                ball.impactBall(i, balls);
+            }
+        }
+        animate();
+    }
+
+);
