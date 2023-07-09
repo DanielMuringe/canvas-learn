@@ -78,19 +78,9 @@ class Vector extends Array {
     }
 
     distance(otherVector) {
-        let vectorCopy = this.copy();
-        vectorCopy.iSub(otherVector);
-        return vectorCopy.getMagnitude();
-    }
-
-    intersection(otherVector, ratio) {
-        let vectorCopy = this.copy();
-        let otherVectorCopy = otherVector.copy();
-        let [a, b] = [ratio[1] / sum(ratio), ratio[0] / sum(ratio)];
-        vectorCopy.iScale(a);
-        otherVectorCopy.iScale(b);
-        vectorCopy.iAdd(otherVectorCopy);
-        return vectorCopy;
+        let resultVector = this.copy();
+        resultVector.iSub(otherVector);
+        return resultVector.getMagnitude();
     }
 
     getMagnitude() {
@@ -137,6 +127,7 @@ let xRand = (n) => randInt(n, window.innerWidth - n);
 let yRand = (n) => randInt(n, window.innerHeight - n);
 let randCoord = (n) => [xRand(n), yRand(n)];
 
+
 //Generate random color
 let randColor = () => {
     let col = () => randInt(0, 255);
@@ -173,11 +164,12 @@ class MovingObject {
 
     collision(otherMovingObject = new MovingObject()) {
 
-        let [m1, m2] = [this.mass, otherMovingObject.mass];
+        let masses = [this.mass, otherMovingObject.mass];
+        let M = sum(masses);
+        let [m1, m2] = masses;
         let [v1, v2] = [this.velocity, otherMovingObject.velocity];
         let [x1, x2] = [this.position, otherMovingObject.position];
-
-        let [a1, a2] = [(2 * m1) / sum([m1 + m2]), (2 * m2) / sum([m1 + m2])];
+        let [a1, a2] = [((2 * m1) / M), ((2 * m2) / M)];
 
         let [vb1, v2b1] = [v1.copy(), v2.copy()];
         vb1.iSub(v2b1);
@@ -212,26 +204,19 @@ class bouncingBalls extends MovingObject {
         fill = true,
         canvas) {
 
-        super(centre, velocity, acceleration, Math.PI * (radius ** 2), 10, 2);
+        radius -= (thickness / 2)
 
-        this.radius = radius + (thickness / 2);
-
-        this.scale = [1, 1];
-
+        super(centre, velocity, acceleration, (4 / 3) * Math.PI * (radius ** 3), 10, 2);
+        this.radius = radius;
         this.canvas = canvas;
-
         this.color = color;
-
         this.fill = fill;
-
         this.thickness = thickness;
-
-        this.inProximity = (coord) => this.position.distance(coord) <= this.radius;
     }
 
     draw() {
         // Mouse interactivity
-        let mouseProximity = this.inProximity(this.canvas.mouse.position) && this.canvas.mouse.inWindow;
+        let mouseProximity = (this.position.distance(this.canvas.mouse.position) <= this.radius) && (this.canvas.mouse.inWindow);
         let radiusFactor = mouseProximity ? 2 : 1;
         let radius = this.radius * radiusFactor;
         let R = new Vector(radius, radius);
@@ -260,9 +245,9 @@ class bouncingBalls extends MovingObject {
     impactBall(currentIndex, balls = []) {
         for (const ball of balls.slice(0, currentIndex)) {
             let otherCentre = ball.position;
-            if (this.position.distance(otherCentre) <= (this.radius + ball.radius)) {
-                this.canvas.line(this.position, otherCentre, 1, this.color);
-                // this.collision(ball);
+            if ((this.position.distance(otherCentre) + this.velocity.getMagnitude()) <= (this.radius + ball.radius)) {
+                // this.canvas.line(this.position, otherCentre, 1, this.color);
+                this.collision(ball);
                 // ball.reverse_x();
                 // ball.reverse_y();
             }
