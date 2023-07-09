@@ -138,7 +138,14 @@ let randColor = () => {
 // Object in motion
 class MovingObject {
 
-    constructor(position = new Vector(0, 0), velocity = new Vector(1, 1), acceleration = new Vector(0, 0), mass = 0, maxVelocity = Infinity, dimension = 2) {
+    constructor(
+        position = new Vector(0, 0),
+        velocity = new Vector(1, 1),
+        acceleration = new Vector(0, 0),
+        mass = 0,
+        maxVelocity = Infinity,
+        dimension = 2
+    ) {
         this.acceleration = acceleration;
         this.velocity = velocity;
         this.position = position;
@@ -202,7 +209,8 @@ class bouncingBalls extends MovingObject {
         color,
         thickness = 1,
         fill = true,
-        canvas) {
+        canvas
+    ) {
 
         radius -= (thickness / 2)
 
@@ -372,21 +380,42 @@ class Canvas {
 const CANVAS = new Canvas(
 
     (canvas) => {
-        let balls = [];
-        let ballCount = 15;
-        for (let i = 1; i <= ballCount; i++) {
-            let ball = new bouncingBalls(
-                randInt(20, 40),
-                new Vector(...randCoord(50)),
-                new Vector(...randList(2, -5, 5, (val => val == 0))),
+        let balls = [
+            new bouncingBalls(
+                80,
+                new Vector(800, 800),
+                new Vector(-3, -3),
                 new Vector(...[0, 0]),
                 randColor(),
                 randInt(2, 6),
                 false,
                 canvas
-            );
-            balls.push(ball);
-        }
+            ),
+            new bouncingBalls(
+                20,
+                new Vector(50, 50),
+                new Vector(3, 3),
+                new Vector(...[0, 0]),
+                randColor(),
+                randInt(2, 6),
+                false,
+                canvas
+            ),
+        ];
+        // let ballCount = 15;
+        // for (let i = 1; i <= ballCount; i++) {
+        //     let ball = new bouncingBalls(
+        //         randInt(20, 40),
+        //         new Vector(...randCoord(50)),
+        //         new Vector(...randList(2, -5, 5, (val => val == 0))),
+        //         new Vector(...[0, 0]),
+        //         randColor(),
+        //         randInt(2, 6),
+        //         false,
+        //         canvas
+        //     );
+        //     balls.push(ball);
+        // }
 
         function animate() {
             requestAnimationFrame(animate);
