@@ -7,35 +7,6 @@ const HEAD = document.head
 const initialWindowDimensions = [window.innerWidth, window.innerHeight];
 
 
-// Set theme color
-function themeColor(){
-    const rootSelector = document.querySelector(':root');
-    this.val = [
-        getComputedStyle(rootSelector).getPropertyValue('--c1'),
-        getComputedStyle(rootSelector).getPropertyValue('--c2'),
-        getComputedStyle(rootSelector).getPropertyValue('--c3')
-    ];
-    this.oppositeVal = [
-        getComputedStyle(rootSelector).getPropertyValue('--d1'),
-        getComputedStyle(rootSelector).getPropertyValue('--d2'),
-        getComputedStyle(rootSelector).getPropertyValue('--d3')
-    ];
-    this.set = (...color) => {
-        rootSelector.style.setProperty('--c1', color[0]);
-        rootSelector.style.setProperty('--c2', color[1]);
-        rootSelector.style.setProperty('--c3', color[2]);
-    };
-    this.setOpposite = (...color) => {
-        rootSelector.style.setProperty('--d1', color[0]);
-        rootSelector.style.setProperty('--d2', color[1]);
-        rootSelector.style.setProperty('--d3', color[2]);
-    };
-    this.color = getComputedStyle(rootSelector).getPropertyValue('--theme-color');
-    this.opposite = getComputedStyle(rootSelector).getPropertyValue('--theme-color-opposite');
-}
-
-const THEME_COLOR = new themeColor();
-
 
 // Square function
 let sqr = num => num ** 2;
@@ -88,134 +59,218 @@ let yRand = (n) => randInt(n, window.innerHeight - n);
 let randCoord = (n) => [xRand(n), yRand(n)];
 
 
-// Generate random color
-let randColor = (exclude=(val=>val<10||val>255)) => {
-    let col = () => Math.abs(randInt(0, 255, exclude));
-    let [c1, c2, c3] = [col(), col(), col()]
-    return {
-        col:`rgb(${c1},${c2},${c3})`,
-        val: [c1, c2, c3]
+// Handle color values
+/** 
+ * @param {String|Array[Int32]} input
+ * @param {String} colorType 
+ * @description valid color types - hex, rgb, rgb_list
+*/
+class Color {
+    constructor(input, colorType) {
+        switch (colorType) {
+            case 'hex':
+                this.rgb_list = Color.hexToRgb(input);
+                break;
+            case 'rgb_list':
+                this.rgb_list = input;
+                break;
+            case 'rgb':
+                this.rgb_list = input.slice(4, -1).split(',').map(v => Number(v));
+                break;
+            default:
+                throw EvalError('Invalid color type: ' + colorType)
+        }
+        this.r = this.rgb_list[0];
+        this.g = this.rgb_list[1];
+        this.b = this.rgb_list[2];
+        this.hex = Color.rgbListToHex(...this.rgb_list);
+        let [c1, c2, c3] = this.rgb_list;
+        this.rgb = `rgb(${c1},${c2},${c3})`;
+
+    }
+
+    static hexToRgb(hex = '#000000') {
+        hex = hex.replace('#', '');
+        if (hex.length != 6) {
+            throw "Only six-digit hex colors are allowed.";
+        }
+
+        var aRgbHex = hex.match(/.{1,2}/g);
+        var aRgb = [
+            parseInt(aRgbHex[0], 16),
+            parseInt(aRgbHex[1], 16),
+            parseInt(aRgbHex[2], 16)
+        ];
+        return aRgb;
+    }
+
+    static rgbListToHex(r, g, b) {
+        let componentToHex = (c) => {
+            const hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+    static random(exclude = (val => val < 10 || val > 255)) {
+        let col = () => Math.abs(randInt(0, 255, exclude));
+        return new Color([col(), col(), col()], 'rgb_list')
+    }
+
+
+}
+
+
+class ThemeColor {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.rootSelector = document.querySelector(':root');
+        let D = ['--d1', '--d2', '--d3'].map(
+            d => eval(getComputedStyle(this.rootSelector).getPropertyValue(d).slice(5, -1).replaceAll(' ', ''))
+        );
+
+
+        this.color = new Color(getComputedStyle(this.rootSelector).getPropertyValue('--theme-color'), 'rgb');
+        this.opposite = new Color(D, 'rgb_list');
+
+        // Get theme tags
+        this.tabColorTag = document.getElementById('tab-color');
+        this.randomizeCanvasColorTag = document.getElementById('randomize-canvas-color');
+        this.pickCanvasColorTag = document.getElementById('bg-color-picker');
+        this.pickCanvasColorPngTag = document.getElementById('bg-color-picker-png');
+        // Get opposite theme tags
+        this.randomizeLineColorTag = document.getElementById('randomize-line-color');
+        this.pickLineColorTag = document.getElementById('line-color-picker');
+        this.pickLineColorPngTag = document.getElementById('line-color-picker-png');
+
+        // Set theme tags attributes
+        this.set(this.color);
+        this.randomizeCanvasColorTag.addEventListener('click', () => this.set(Color.random()));
+        this.pickCanvasColorTag.addEventListener('input', () => this.set(new Color(this.pickCanvasColorTag.value, 'hex')));
+        // Set opposite theme tags attributes
+        this.setOpposite(this.opposite);
+        this.randomizeLineColorTag.addEventListener('click', () => this.setOpposite(Color.random()));
+        this.pickLineColorTag.addEventListener('input', () => this.setOpposite(new Color(this.pickLineColorTag.value, 'hex')));
+    }
+
+    set(color=this.color) {
+        this.rootSelector.style.setProperty('--c1', color.r);
+        this.rootSelector.style.setProperty('--c2', color.g);
+        this.rootSelector.style.setProperty('--c3', color.b);
+        this.color = new Color(getComputedStyle(this.rootSelector).getPropertyValue('--theme-color'), 'rgb');
+        this.pickCanvasColorTag.defaultValue = this.pickCanvasColorTag.value = this.color.hex;
+        this.pickCanvasColorPngTag.style.fill = this.color.hex;
+        this.tabColorTag.content = this.color.hex;
+    };
+    
+    setOpposite(color=this.opposite) {
+        this.rootSelector.style.setProperty('--d1', color.r);
+        this.rootSelector.style.setProperty('--d2', color.g);
+        this.rootSelector.style.setProperty('--d3', color.b);
+        this.opposite = new Color(getComputedStyle(this.rootSelector).getPropertyValue('--theme-color-opposite'), 'rgb');
+        this.pickLineColorTag.defaultValue = this.pickLineColorTag.value = this.opposite.hex;
+        this.pickLineColorPngTag.style.fill = this.opposite.hex;
+        this.canvas.lineColor = this.opposite.hex;
     };
 }
 
 
-// Conver tggb to hex
-let componentToHex = (c) => {
-    const hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-  }
-  
-let rgbToHex = (r, g, b) => "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+
+
+function bouncingPoints(radius, coordinates = randCoord(), velocity, canvas) {
+    this.color = canvas.lineColor;
+    this.radius = radius;
+    this.coordinates = coordinates;
+
+    let [x, y] = this.coordinates;
+    let [dx, dy] = this.velocity = velocity;
+
+    this.bounceWall = () => {
+        // Ensure point does not go past wall
+        let xImpactWall = x >= window.innerWidth || x <= 0;
+        let yImpactWall = y >= window.innerHeight || y <= 0;
+
+        if (xImpactWall) dx *= -1;
+        if (yImpactWall) dy *= -1;
+
+        x += dx; y += dy;
+
+        this.coordinates[0] = x; this.coordinates[1] = y;
+        this.velocity[0] = dx; this.velocity[1] = dy;
+    }
+
+    this.bounceRadius = (currentIndex, points = []) => {
+        this.color = canvas.lineColor;
+        for (const point of points.slice(0, currentIndex)) {
+            if (distance(this.coordinates, point.coordinates) <= (this.radius + point.radius + canvas.lineLength))
+                canvas.line(this.coordinates, point.coordinates, 2, this.color);
+        }
+    }
+}
 
 
 class Canvas {
 
-    constructor() {
+    constructor(render) {
+        // Access variables
+        this.THEME_COLOR = new ThemeColor(this);
+        this.lineColor = this.THEME_COLOR.opposite.hex;
+        this.lineLength = 10;
+        this.defaultColor = this.THEME_COLOR.color.hex;
+
         // Create tag and assign attributes
         this.tag = document.createElement('canvas');
-        this.tagSetter();
+        this.tag.id = 'main-canvas';
+        this.tag.width = window.innerWidth;
+        this.tag.height = window.innerHeight;
+        window.addEventListener(
+            'resize',
+            (event) => {
+                this.tag.width = BODY.width = event.currentTarget.innerWidth;
+                this.tag.height = BODY.height = event.currentTarget.innerHeight;
+            }
+        );
         BODY.appendChild(this.tag);
 
-        // Draw using context
+        // Get canvas context
         this.ctx = this.tag.getContext('2d');
-        this.defaultColor = THEME_COLOR.color;
-
-        // Access variables
-        this.lineColor = THEME_COLOR.opposite;
-        this.lineLength = 10;
 
         // Render stuff on canvas
-        this.render();
+        render(this);
     }
 
-    render(obj = this) {
 
-        const tabColorTag = document.getElementById('tab-color');
-        tabColorTag.content = rgbToHex(...THEME_COLOR.val);
-        const randomizeLineColorTag   = document.getElementById('randomize-line-color');
-        const pickLineColorTag   = document.getElementById('line-color-picker');
-        pickLineColorTag.defaultValue = rgbToHex(...THEME_COLOR.val);
-        const randomizeCanvasColorTag   = document.getElementById('randomize-canvas-color');
-        const pickCanvasColorTag   = document.getElementById('bg-color-picker');
-        const pickCanvasColorPngTag = document.getElementById('bg-color-picker-png');
-        pickCanvasColorPngTag.fill = rgbToHex(...THEME_COLOR.val);
-        pickCanvasColorTag.defaultValue = rgbToHex(...THEME_COLOR.val);
-        
-        randomizeLineColorTag.addEventListener('click', 
-            () => {
-                    let col = randColor();
-                    this.lineColor = col.col;
-                    THEME_COLOR.setOpposite(...col.val);
-                    pickLineColorTag.defaultValue = rgbToHex(...col.val);
-                    this.partyTime = false;
-            }
-        );
-        randomizeCanvasColorTag.addEventListener('click', 
-            () => {
-                    let col = randColor();
-                    THEME_COLOR.set(...col.val);
-                    pickCanvasColorTag.defaultValue = rgbToHex(...col.val);
-                    pickCanvasColorPngTag.fill = rgbToHex(...THEME_COLOR.val);
-                    tabColorTag.content = rgbToHex(...THEME_COLOR.val);
-                    this.partyTime = false;
-            }
-        );
+    line(begin = [0, 0], end = [1, 1], thickness = 1, color = this.defaultColor) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(...begin);
+        this.ctx.lineTo(...end);
+        this.ctx.lineWidth = thickness;
+        this.ctx.strokeStyle = color;
+        this.ctx.stroke();
+    }
+
+}
 
 
-        function bouncingPoints(radius, coordinates = randCoord(), velocity) {
-            this.color = obj.lineColor;
-            this.radius = radius;
-            this.coordinates = coordinates;
-
-            let [x, y] = this.coordinates;
-            let [dx, dy] = this.velocity = velocity;
-
-            this.bounceWall = () => {
-                // Create bounding effect of circle
-                let xImpactWall = x >= window.innerWidth || x <= 0;
-                let yImpactWall = y >= window.innerHeight || y <= 0;
-
-                if (xImpactWall) dx *= -1;
-                if (yImpactWall) dy *= -1;
-
-                x += dx; y += dy;
-
-                this.coordinates[0] = x; this.coordinates[1] = y;
-                this.velocity[0] = dx; this.velocity[1] = dy;
-            }
-
-            this.bounceRadius = (currentIndex, points=[]) => {
-                this.color = obj.lineColor;
-                for (const point of points.slice(0, currentIndex)) {
-                    if (distance(this.coordinates, point.coordinates) <= (this.radius + point.radius + obj.lineLength))
-                        obj.line(this.coordinates, point.coordinates, 2, this.color);
-                }
-            }
-        }
+const CANVAS = new Canvas(
+    (canvas) => {
 
         let points = [];
-        let pointCount = 100;
+        let pointCount = 70;
         for (let i = 0; i < pointCount; i++) {
             points.push(
                 new bouncingPoints(
                     80,
                     randCoord(50),
-                    randList(2, -4, 4, (val => val == 0))
+                    randList(2, -4, 4, (val => val == 0)),
+                    canvas
                 )
             );
         }
-        window.addEventListener(
-            'resize',
-            (event) => {
-                let width = event.currentTarget.innerWidth;
-                let height = event.currentTarget.innerHeight;
-                obj.tag.width = width; BODY.width = width;
-                obj.tag.height = height; BODY.height = height;
-            }
-        );
+
         function animate() {
             requestAnimationFrame(animate);
-            obj.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            canvas.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             for (let i = 0; i < points.length; i++) {
                 const point = points[i];
                 point.bounceWall();
@@ -225,49 +280,6 @@ class Canvas {
         animate()
 
     }
-
-
-    tagSetter(tag = this.tag) {
-
-        // Set tag id
-        tag.id = 'main-canvas';
-
-        // Set canvas dimensions
-        tag.width = window.innerWidth;
-        tag.height = window.innerHeight;
-    }
-
-    line(begin = [0, 0], end = [1, 1], thickness=1, color = this.defaultColor, func = (context) => null) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(...begin);
-        this.ctx.lineTo(...end);
-        this.ctx.lineWidth = thickness;
-        this.ctx.strokeStyle = color;
-        func(this.context);
-        this.ctx.stroke();
-    }
-
-    square(dimensions = [100, 100], position = [0, 0], color = this.defaultColor, func = (context) => null) {
-        this.ctx.beginPath();
-        this.ctx.fillStyle = color;
-        func(this.ctx);
-        this.ctx.fillRect(...position, ...dimensions);
-    }
-
-    circle(radius = 1, centre = [0, 0], color = this.defaultColor, fill = true, func = (context) => null) {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = color;
-        this.ctx.arc(...centre, radius, 0, degreesToRadians(360), 1);
-        if (fill) {
-            this.ctx.fillStyle = color;
-            this.ctx.fill();
-        }
-        func(this.ctx);
-        this.ctx.stroke();
-    }
-}
-
+);
 BODY.style.visibility = 'visible';
-
-CANVAS = new Canvas();
 
